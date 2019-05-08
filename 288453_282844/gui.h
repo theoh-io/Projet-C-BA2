@@ -23,7 +23,7 @@ class MyWindow : public Gtk::Window
   virtual ~MyWindow();
   void switch_etat();
   bool get_etat();
-  
+
   void set_Label(std::string s);
 
   protected:
@@ -33,7 +33,7 @@ class MyWindow : public Gtk::Window
   void on_button_save_clicked();
   void on_button_start_clicked();
   void on_button_step_clicked();
-  
+
   Gtk::Box m_Box, m_Box_Top, m_Box_Bottom;
   MyArea              m_Area;
   Gtk::Button    m_Button_Exit,m_Button_Open,m_Button_Save,
@@ -41,9 +41,13 @@ class MyWindow : public Gtk::Window
   Gtk::Label     m_Label_Info;
  //verifier private ou protected
   bool etat_simulation;
-  
+
   private:
 	void draw();
 };
+
+//functions to be used in projet
+auto app_creation();
+auto app_creation(int argc,char* argv,std::string "org.gtkmm.example");
 
 #endif // GTKMM_EXAMPLE_MYEVENT_H

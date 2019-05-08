@@ -13,6 +13,8 @@ using namespace std;
 enum ETAT_TERMINAL {EXECUT_SEUL = 1,ENTREE_TEXTE,ENTREE_EXCES};
 enum LIGNE_COMMANDE {MODE=1,FICHIER,NBMOTS};
 
+//retirer les appels a gui
+
 //fonction d'analyse de la ligne de commande
 int main(int argc, char * argv[])
 {
@@ -20,16 +22,16 @@ int main(int argc, char * argv[])
 	{
 		case EXECUT_SEUL:
 		{
-			auto app = Gtk::Application::create(argc, argv, "org.gtkmm.example");
+			auto app = app_creation(argc, argv, "org.gtkmm.example");
 			MyWindow window;
 			window.set_default_size(HAUTEUR_FENETRE,SIDE);
 			window.set_resizable(false);
 			return app->run(window);
-			
+
 		}
 		case ENTREE_TEXTE:
 		{
-			auto app = Gtk::Application::create();
+			auto app = app_creation();
 			MyWindow window;
 			window.set_default_size(HAUTEUR_FENETRE,SIDE);
 			window.set_resizable(false);
@@ -43,8 +45,8 @@ int main(int argc, char * argv[])
 			std::string s;
 			s = argv[MODE];
 			if(s=="Error")	lecture(argv[FICHIER]);
-		
-		}		
+
+		}
 	}
 	exit(0);
 }
