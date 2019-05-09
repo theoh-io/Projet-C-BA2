@@ -131,15 +131,10 @@ void dessin_player(const Cairo::RefPtr<Cairo::Context>& cr)
 
 MyWindow::MyWindow() :
   m_Box(Gtk::ORIENTATION_VERTICAL,HAUT_BOUT),
-  m_Box_Top(Gtk::ORIENTATION_HORIZONTAL),
-  m_Box_Bottom(Gtk::ORIENTATION_HORIZONTAL),
-  m_Button_Exit("Exit"),
-  m_Button_Open("Open"),
-  m_Button_Save("Save"),
-  m_Button_Start("Start"),
-  m_Button_Step("Step"),
-  m_Label_Info("No game to run"),
-  etat_simulation(false)
+	m_Box_Top(Gtk::ORIENTATION_HORIZONTAL),
+  m_Box_Bottom(Gtk::ORIENTATION_HORIZONTAL),m_Button_Exit("Exit"),
+	m_Button_Open("Open"), m_Button_Save("Save"), m_Button_Start("Start"),
+  m_Button_Step("Step"), m_Label_Info("No game to run"),etat_simulation(false)
 {
 	set_title("Dodgeball");
 
