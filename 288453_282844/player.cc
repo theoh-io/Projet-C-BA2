@@ -27,26 +27,42 @@ Player::Player(double abs, double ord, int total1, int total2,
 	pos_joueur.rayon=COEF_RAYON_JOUEUR*(SIDE/nbcell);
 }
 
+//constructeur de copie
+Player::Player(const Player& autre)
+{
+	//a définir
+}
+//Destructeur
+virtual Player::~Player()
+{
+	delete cible;
+}
+
+
+
 
 // accesseurs
-int Player::getCompteur () const 
-{ 
+int Player::getCompteur () const
+{
 	return compteur;
 }
 
-Rond Player::getPos_joueur () const 
-{ 
+Rond Player::getPos_joueur () const
+{
 	return pos_joueur;
 }
 
-int Player::getNb_touches () const 
-{ 
+int Player::getNb_touches () const
+{
 	return nb_touches;
 }
 
 
 // manipulateurs
-
+void set_cible(Player* autre)
+{
+	cible=autre;
+}
 void Player::setCompteur(double compt1)
 {
 	compteur = compt1;
@@ -62,5 +78,3 @@ void Player::setPos_joueur(double x1, double y1)
 	pos_joueur.x = x1;
 	pos_joueur.y = y1;
 }
-
-

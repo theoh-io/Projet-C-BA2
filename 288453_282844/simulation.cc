@@ -21,11 +21,11 @@ static vector<Obstacle> tab_obst;
 static vector<Player> tab_player;
 static vector <Ball> tab_ball;
 
-//états de l'automate de lecture			
-enum Etat_lecture {NB_CELL,NB_PLAYER,PLAYER,NB_OBSTACLE,OBSTACLE, 
+//états de l'automate de lecture
+enum Etat_lecture {NB_CELL,NB_PLAYER,PLAYER,NB_OBSTACLE,OBSTACLE,
 				   NB_BALL,BALL,FIN};
-					   
-					   
+
+
 //prototypes des fonctions confidentielles au module
 void decodage_ligne(string line,bool mode,int& etat); //mode=true dans mode ERROR
 //verifie la position pour joueur ou balle
@@ -36,45 +36,96 @@ void add_player(double abs, double ord, int touch, int compt);
 void add_ball(double abs, double ord, double a);
 void add_obs(int total1,int total2);
 void err_jb(bool mode);
-void err_jo(bool mode); 
+void err_jo(bool mode);
 void err_bo(bool mode);
 void err_bb(bool mode);
 void err_jj(bool mode);
 void err_oo(bool mode);
 void check_error(bool mode);
+void mise_a_jour();
+void analyse();
+void choix_cible();
 
+
+void mise_a_jour()
+{
+	//1 pas
+	//Analyse
+	//lancer balles
+	//depkacer balles
+	//detection collisions balles
+	//suppression des éléments
+}
+
+void analyse()
+{
+//affectation de la cible
+  choix_cible();
+
+//definir direction de deplacement [algo Floyd]
+	//test ligne droite supperposition rectangle et double rayon 3.2.1
+	//3.2.2 algo floyd
+//déplacer joueurs qui le peuvent vers cible
+//traitement contact joueur-joueur(modifier la fonction supperposition marge MJ)
+	//mode contact entre 2 joueurs decompte s'affiche mais ne lance meme plus de balles
+}
+
+void choix_cible()
+{
+	//comment faire apparaitre distance infini sans magic numbers
+	double dist(100000000);
+	Coord r1, r2;
+	Player* cible;
+	for(auto player:tab_player)
+	{
+		r1.x=player.getPos_joueur().x;
+		r1.y=player.getPos_joueur().y
+  	for(auto element: tab_player)
+	  {
+		  r2.x = element.getPos_joueur().x;
+		  r2.y = element.getPos_joueur().y;
+		  if((dist_deux_points(r1,r2)>element.getPos_joueur().rayon)
+																&&(dist_deux_points(r1,r2)<dist)
+			{
+				dist=dist_deux_points(r1,r2);
+				cible=&element;
+			}
+	  }
+		player.set_cible(cible);
+	}
+}
 
 //fonction main fournit le pointeur vers le fichier (argv[1])
 void lecture(char * nom_fichier)
 {
 	static int etat=NB_CELL;
     string line;
-    ifstream fichier(nom_fichier); 
-    if(!fichier.fail()) 
+    ifstream fichier(nom_fichier);
+    if(!fichier.fail())
     {
-        while(getline(fichier >> ws,line)) 
+        while(getline(fichier >> ws,line))
         {
 			if(etat==FIN) break;
-			if(line[0]=='#')  continue;  
+			if(line[0]=='#')  continue;
 			decodage_ligne(line,true,etat);
         }
 		check_error(true);
         cout << FILE_READING_SUCCESS << endl;
 	}
 }
-                                                                         
-//décodage selon l'etat courant d'une ligne lue dans le fichier 
+
+//décodage selon l'etat courant d'une ligne lue dans le fichier
 void decodage_ligne(string line,bool mode,int& etat)
 {
 	istringstream data(line);
-	//static int etat(NB_CELL); //état initial  
+	//static int etat(NB_CELL); //état initial
 	static int i(0), total(0);
 	double x(0),y(0),angle(0);
 	int buffer_int1(0),buffer_int2(0),k(0);
-	switch(etat) 
+	switch(etat)
 	{
-		case NB_CELL: 
-			(data >> total); 
+		case NB_CELL:
+			(data >> total);
 			if((total<MIN_CELL)or(total>MAX_CELL))
 			{
 				if(mode==true) exit(0);
@@ -88,15 +139,15 @@ void decodage_ligne(string line,bool mode,int& etat)
 			etat=NB_PLAYER;
 			nbCell=total;
 			break;
-		case NB_PLAYER: 
+		case NB_PLAYER:
 			(data >> total);
-			i=0 ;	
-			if(total==0) etat=NB_OBSTACLE; 
+			i=0 ;
+			if(total==0) etat=NB_OBSTACLE;
 			else etat=PLAYER;
 			break;
-		case PLAYER: 
+		case PLAYER:
 			(data>>x>>y>>buffer_int1>>buffer_int2);
-		//utilise buffer_int1&2 pour stocker le nombre de touche et compteur  
+		//utilise buffer_int1&2 pour stocker le nombre de touche et compteur
 			++i;
 			add_player(x,y,buffer_int1,buffer_int2);
 			if(falseposition(x,y))
@@ -110,16 +161,16 @@ void decodage_ligne(string line,bool mode,int& etat)
 				}
 			}
 			if(i == total) etat=NB_OBSTACLE ;
-			break;	    
-		case NB_OBSTACLE: 
-			(data >> total); 
-			i=0 ;
-			if(total==0) etat=NB_BALL; 
-			else etat=OBSTACLE ; 
 			break;
-		case OBSTACLE: 
+		case NB_OBSTACLE:
+			(data >> total);
+			i=0 ;
+			if(total==0) etat=NB_BALL;
+			else etat=OBSTACLE ;
+			break;
+		case OBSTACLE:
 		//utilisation de buffer_int1&2 pour stocker ligne et col d'un obstacle
-			(data >>buffer_int1>>buffer_int2); 
+			(data >>buffer_int1>>buffer_int2);
 			++i;
 			add_obs(buffer_int1,buffer_int2);
 			//test de validité sur la position de l'obstacle
@@ -135,27 +186,27 @@ void decodage_ligne(string line,bool mode,int& etat)
 			}
 			if(i == total) etat=NB_BALL ;
 			break;
-		case NB_BALL: 
-			(data >> total); 
+		case NB_BALL:
+			(data >> total);
 			i=0;
-			if(total==0) etat=FIN; else etat=BALL ; 
+			if(total==0) etat=FIN; else etat=BALL ;
 			break;
-		case BALL: 
+		case BALL:
 			(data>>x>>y>>angle);
 			++i;
 			add_ball(x,y,angle);
 			if(falseposition(x,y))
-			{ 
+			{
 				cout<<BALL_OUT(i)<<endl;
 				if(mode==true) exit(0);
 				else erasing_data(etat);
-			}  
-			if(i == total) etat=FIN ; 
+			}
+			if(i == total) etat=FIN ;
 			break;
 		case FIN:
 			cout<<"la fin a été atteinte"<<endl;
 			break;
-	}	
+	}
 }
 
 bool falseposition(double x, double y){
@@ -163,7 +214,7 @@ bool falseposition(double x, double y){
 	else return false;
 }
 
-bool falseposition(int colonne,int ligne,int& k){ 
+bool falseposition(int colonne,int ligne,int& k){
 	k=0;
 	if((colonne<0)||(colonne>(nbCell-1)))
 	{
@@ -177,7 +228,7 @@ bool falseposition(int colonne,int ligne,int& k){
 	}
 	return false;
 }
-                                                                       
+
 void add_player(double abs, double ord, int touch, int compt)
 {
 	Player p(abs,ord,touch,compt,nbCell);
@@ -187,7 +238,7 @@ void add_player(double abs, double ord, int touch, int compt)
 void add_ball(double abs, double ord, double a)
 {
 	Ball b(abs, ord, a, nbCell);
-	tab_ball.push_back(b);	
+	tab_ball.push_back(b);
 }
 
 void add_obs(int total1,int total2)
@@ -214,7 +265,7 @@ void err_jj(bool mode)
 	{
 		for (size_t j(tab_player.size()-1); j > i ; --j)
 		{
-			if (supp_cercles( tab_player[i].getPos_joueur(), 
+			if (supp_cercles( tab_player[i].getPos_joueur(),
 											tab_player[j].getPos_joueur(), nbCell))
 			{
 				cout<<PLAYER_COLLISION(i+1, j+1)<<endl;
@@ -265,7 +316,7 @@ void err_jb(bool mode)
 	{
 		for (size_t m(0); m < tab_ball.size() ; ++m)
 		{
-			if (supp_cercles(tab_player[i].getPos_joueur(), tab_ball[m].getPos_ball(), 
+			if (supp_cercles(tab_player[i].getPos_joueur(), tab_ball[m].getPos_ball(),
 				nbCell))
 			{
 				cout<<PLAYER_BALL_COLLISION(i+1, m+1)<<endl;
@@ -283,7 +334,7 @@ void err_jo(bool mode)
 		for (size_t m(0); m < tab_obst.size() ; ++m)
 		{
 			if (supp_cercle_carre(tab_player[i].getPos_joueur(), tab_obst[m].getcarre(),
-				nbCell))	
+				nbCell))
 			{
 				cout<<COLL_OBST_PLAYER(m+1, i+1)<<endl;
 				if(mode==true) exit(0);
@@ -301,7 +352,7 @@ void err_bo(bool mode)
 		{
 			if (supp_cercle_carre(tab_ball[i].getPos_ball(), tab_obst[m].getcarre(),
 				nbCell))
-			{	
+			{
 				cout<<COLL_BALL_OBSTACLE(i+1)<<endl;
 				if(mode==true) exit(0);
 				else erasing_data();
@@ -364,10 +415,10 @@ bool verif(string nom_fichier)
 	static int etat;
 	etat=NB_CELL;
     string line;
-    ifstream fichier(nom_fichier); 
-    if(!fichier.fail()) 
+    ifstream fichier(nom_fichier);
+    if(!fichier.fail())
     {
-        while(getline(fichier >> ws,line)) 
+        while(getline(fichier >> ws,line))
         {
 			if(etat==FIN) break;
 			if(line[0]=='#')  continue;
@@ -376,9 +427,9 @@ bool verif(string nom_fichier)
 		check_error(false);
 	}
 	//nbCell vaut 0 si erreur lecture car effacage struct de données
-	if(nbCell==0) return false;  
+	if(nbCell==0) return false;
 	return true;
-	
+
 }
 //doit arreter les test et effacer les donnees mais pas fermer la fenetre
 void erasing_data(int& etat)
@@ -396,14 +447,14 @@ void erasing_data()
 	tab_ball.clear();
 	tab_obst.clear();
 	tab_player.clear();
-	
+
 }
 
 bool game_over()
 {
 	if(tab_player.size() <= NB_MIN_PLAYER) return true;
 	else return false;
-}	
+}
 
 int get_nbCell()
 {

@@ -10,10 +10,10 @@ using namespace std;
 
 #define HAUTEUR_FENETRE 							SIDE + 100
 
-enum ETAT_TERMINAL {EXECUT_SEUL = 1,ENTREE_TEXTE,ENTREE_EXCES};
-enum LIGNE_COMMANDE {MODE=1,FICHIER,NBMOTS};
+enum ETAT_TERMINAL {EXECUT_SEUL = 1,ENTREE_TEXTE,ENTREE_ERROR,ENTREE_STEP};
+enum LIGNE_COMMANDE {MODE=1,FICHIER,SORTIE};
 
-//retirer les appels a gui
+//mode step
 
 //fonction d'analyse de la ligne de commande
 int main(int argc, char * argv[])
@@ -40,12 +40,19 @@ int main(int argc, char * argv[])
 			if(game_over()) window.set_Label("Game's over!");
 			return app->run(window);
 		}
-		case ENTREE_EXCES:
+		case ENTREE_ERROR:
 		{
 			std::string s;
 			s = argv[MODE];
 			if(s=="Error")	lecture(argv[FICHIER]);
-
+		}
+		case ENTREE_STEP:
+		{
+			std::string s;
+			s = argv[MODE];
+			if(s=="Step") lecture(argv[FICHIER]);
+			//appeler la fonction de mise a jour pour 1 boucle
+			save_file(SORTIE);
 		}
 	}
 	exit(0);
