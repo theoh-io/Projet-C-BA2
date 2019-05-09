@@ -86,10 +86,10 @@ void dessin_ball(const Cairo::RefPtr<Cairo::Context>& cr)
 		ball_orig.y = get_ball_i(m).getPos_ball().y;
 		Coord ball_changed = chgmnt_coord(ball_orig);
 		cr->save();
-		cr->arc(ball_changed.x, ball_changed.y, 
+		cr->arc(ball_changed.x, ball_changed.y,
 				get_ball_i(m).getPos_ball().rayon, RAD_NUL,
 				TOUR_RAD);
-		cr->set_source_rgb(0.0, 0.0, 0.8); 
+		cr->set_source_rgb(0.0, 0.0, 0.8);
 		cr->fill_preserve();
 		cr->restore();
 		cr->stroke();
@@ -104,11 +104,11 @@ void dessin_player(const Cairo::RefPtr<Cairo::Context>& cr)
 		player_orig.x = get_player_i(k).getPos_joueur().x;
 		player_orig.y = get_player_i(k).getPos_joueur().y;
 		Coord player_changed = chgmnt_coord(player_orig);
-		
+
 		//dessin joueur avec état
 		cr->set_line_width(TRAIT_NUL);
 		cr->save();
-		cr->arc(player_changed.x, player_changed.y, 
+		cr->arc(player_changed.x, player_changed.y,
 				get_player_i(k).getPos_joueur().rayon, RAD_NUL,
 				TOUR_RAD);
 		switch(get_player_i(k).getNb_touches())
@@ -119,7 +119,7 @@ void dessin_player(const Cairo::RefPtr<Cairo::Context>& cr)
 			case RISQUE:
 			cr->set_source_rgb(1.0, 0.4, 0.0);
 			break;
-			case TOUCHE: 
+			case TOUCHE:
 			cr->set_source_rgb(1.0, 0.9, 0.0);
 			break;
 			case SAIN:
@@ -129,18 +129,18 @@ void dessin_player(const Cairo::RefPtr<Cairo::Context>& cr)
 		cr->fill_preserve();
 		cr->stroke();
 		cr->restore();
-	 	
+
 	 	//dessin de l'arc compteur
 	 	cr->save();
 		cr->set_line_width(RAPP_TRAIT*get_player_i(k).getPos_joueur().rayon);
-		cr->arc(player_changed.x, player_changed.y, 
+		cr->arc(player_changed.x, player_changed.y,
 				get_player_i(k).getPos_joueur().rayon*RAPP_RAYON,
 				TROIS_DEMI_PI,
 				tps_angle(get_player_i(k).getCompteur()));
 		cr->set_source_rgb(0.2, 0.6, 0.6);
 		cr->stroke();
 		cr->restore();
-	}	
+	}
 }
 
 
@@ -154,28 +154,28 @@ MyWindow::MyWindow() :
   m_Button_Open("Open"),
   m_Button_Save("Save"),
   m_Button_Start("Start"),
-  m_Button_Step("Step"),  
+  m_Button_Step("Step"),
   m_Label_Info("No game to run"),
   etat_simulation(false)
 {
 	set_title("Dodgeball");
-  
+
   	add(m_Box);
 
   	m_Box.pack_start(m_Box_Top);
   	m_Box.pack_start(m_Box_Bottom);
-  
-  
+
+
   	m_Box_Top.pack_start(m_Button_Exit,false,false);// keep fixed width
-  	m_Box_Top.pack_start(m_Button_Open,false,false); // and aligned to left;  
+  	m_Box_Top.pack_start(m_Button_Open,false,false); // and aligned to left;
   	m_Box_Top.pack_start(m_Button_Save,false,false);
   	m_Box_Top.pack_start(m_Button_Start,false,false);
   	m_Box_Top.pack_start(m_Button_Step,false,false);
   	m_Box_Top.pack_start(m_Label_Info);
-  
+
   	m_Area.set_size_request(SIDE,SIDE);
   	m_Box_Bottom.pack_start(m_Area);
-  
+
   	// Connect the clicked signal of the button to
   	// their signal handler
   	m_Button_Exit.signal_clicked().connect(sigc::mem_fun(*this,
@@ -188,7 +188,7 @@ MyWindow::MyWindow() :
 							&MyWindow::on_button_start_clicked) );
   	m_Button_Step.signal_clicked().connect(sigc::mem_fun(*this,
 							&MyWindow::on_button_step_clicked) );
-  
+
   	// Show all children of the window
   	show_all_children();
 }
@@ -255,7 +255,7 @@ void MyWindow::on_button_save_clicked()
     	{
       		cout<<"file is not saved"<<endl;
       		break;
-    	} 
+    	}
   	}
 }
 
@@ -284,3 +284,12 @@ void MyWindow::on_button_step_clicked()
 	std::cout<<"step clicked"<<std::endl;
 }
 
+auto app_creation()	
+{
+  return Gtk::Application::create();
+}
+
+ auto app_creation(int argc,char* argv,std::string "org.gtkmm.example")
+{
+	return Gtk::Application::create(argc, argv, "org.gtkmm.example");
+}
