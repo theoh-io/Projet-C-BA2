@@ -149,14 +149,10 @@ void dessin_player(const Cairo::RefPtr<Cairo::Context>& cr)
 MyWindow::MyWindow() :
   m_Box(Gtk::ORIENTATION_VERTICAL,HAUT_BOUT),
   m_Box_Top(Gtk::ORIENTATION_HORIZONTAL),
-  m_Box_Bottom(Gtk::ORIENTATION_HORIZONTAL),
-  m_Button_Exit("Exit"),
-  m_Button_Open("Open"),
-  m_Button_Save("Save"),
-  m_Button_Start("Start"),
-  m_Button_Step("Step"),
-  m_Label_Info("No game to run"),
-  etat_simulation(false)
+	m_Box_Bottom(Gtk::ORIENTATION_HORIZONTAL), m_Button_Exit("Exit"),
+	m_Button_Open("Open"),m_Button_Save("Save"),m_Button_Start("Start"),
+  m_Button_Step("Step"),m_Label_Info("No game to run"),etat_simulation(false),
+	timer_added(false),disconnect(false),timeout_value(500) // 500 ms = 0.5 seconds
 {
 	set_title("Dodgeball");
 
@@ -191,6 +187,26 @@ MyWindow::MyWindow() :
 
   	// Show all children of the window
   	show_all_children();
+}
+
+
+
+
+bool MyWindow::on_timeout()
+{
+  static unsigned int val(1);
+
+  if(disconnect)
+  {
+	  disconnect = false; // reset for next time a Timer is created
+
+	  return false; // End of Timer
+  }
+  //action a faire a chaque tic = mise a jour
+  std::cout << "This is timer value : " << val << std::endl;
+  ++val; // tic the clock
+
+  return true; // keep the Timer working
 }
 
 MyWindow::~MyWindow()
@@ -261,12 +277,42 @@ void MyWindow::on_button_save_clicked()
 
 void MyWindow::on_button_start_clicked()
 {
+	/*
 	std::cout<<"start clicked"<<std::endl;
 	switch_etat();
 	if(get_etat()==true)  std::cout<<"simulation is on"<<std::endl;
 	if(get_etat()==false) std::cout<<"simulation stopped"<<std::endl;
+	*/
+
+	//bouton en mode start
+	if(not timer_added)
+	{
+		Glib::signal_timeout().connect( sigc::mem_fun(*this, &BasicTimer::on_timeout),
+										timeout_value );
+		timer_added = true
+		disconnect = false;  //?
+		std::cout << "Timer added" << std::endl;
+		//changer le label du bouton a stop
+		start_stop();
+	}
+	//bouton mode stop
+	else
+	{
+		std::cout << "manually disconnecting the timer " << std::endl;
+	  disconnect  = true;
+		timer_added = false;
+		start_stop();
+	}
+
+
 }
 
+void MyWindow::start_stop()
+{
+	if(timer_added) m_Button_Start="Stop";
+	else m_Button_Start="Start";
+}
+/*
 void MyWindow::switch_etat()
 {
 	if(etat_simulation==true) etat_simulation=false;
@@ -277,14 +323,14 @@ bool MyWindow::get_etat()
 {
 	return etat_simulation;
 }
-
+*/
 
 void MyWindow::on_button_step_clicked()
 {
 	std::cout<<"step clicked"<<std::endl;
 }
 
-auto app_creation()	
+auto app_creation()
 {
   return Gtk::Application::create();
 }

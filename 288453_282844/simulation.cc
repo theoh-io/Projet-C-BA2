@@ -75,7 +75,7 @@ void choix_cible()
 	//comment faire apparaitre distance infini sans magic numbers
 	double dist(100000000);
 	Coord r1, r2;
-	Player* cible;
+	Player* cible=nullptr;
 	for(auto player:tab_player)
 	{
 		r1.x=player.getPos_joueur().x;
