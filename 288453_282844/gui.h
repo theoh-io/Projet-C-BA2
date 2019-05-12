@@ -57,7 +57,5 @@ class MyWindow : public Gtk::Window
 };
 
 //functions to be used in projet
-auto app_creation();
-auto app_creation(int argc,char* argv,std::string "org.gtkmm.example");
 
 #endif // GTKMM_EXAMPLE_MYEVENT_H

@@ -22,7 +22,7 @@ int main(int argc, char * argv[])
 	{
 		case EXECUT_SEUL:
 		{
-			auto app = app_creation(argc, argv, "org.gtkmm.example");
+			auto app = Gtk::Application::create(argc, argv, "org.gtkmm.example");
 			MyWindow window;
 			window.set_default_size(HAUTEUR_FENETRE,SIDE);
 			window.set_resizable(false);
@@ -31,7 +31,7 @@ int main(int argc, char * argv[])
 		}
 		case ENTREE_TEXTE:
 		{
-			auto app = app_creation();
+			auto app =Gtk::Application::create();
 			MyWindow window;
 			window.set_default_size(HAUTEUR_FENETRE,SIDE);
 			window.set_resizable(false);
@@ -52,7 +52,7 @@ int main(int argc, char * argv[])
 			s = argv[MODE];
 			if(s=="Step") lecture(argv[FICHIER]);
 			//appeler la fonction de mise a jour pour 1 boucle
-			save_file(SORTIE);
+			save_file(argv[SORTIE]);
 		}
 	}
 	exit(0);

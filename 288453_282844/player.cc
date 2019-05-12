@@ -33,10 +33,11 @@ Player::Player(const Player& autre)
 	//a définir
 }
 //Destructeur
-virtual Player::~Player()
+Player::~Player()
 {
-	delete cible;
+	delete cible;	
 }
+//a definir impérativement
 
 
 
@@ -59,10 +60,7 @@ int Player::getNb_touches () const
 
 
 // manipulateurs
-void set_cible(Player* autre)
-{
-	cible=autre;
-}
+
 void Player::setCompteur(double compt1)
 {
 	compteur = compt1;

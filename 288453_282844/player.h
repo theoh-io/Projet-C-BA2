@@ -20,7 +20,7 @@ class Player
 		double getOrdonnee() const;
 		int getCompteur() const;
 		Rond getPos_joueur() const;
-	  int getNb_touches() const;
+	    int getNb_touches() const;
 
 		// manipulateurs
 		void setAbcisse(double);
@@ -33,7 +33,7 @@ class Player
 
 	private:
 		//declaration des attributs
-		Player* cible;
+		Player* cible=nullptr;
 		Rond pos_joueur;
 		int compteur;
 		int nb_touches;

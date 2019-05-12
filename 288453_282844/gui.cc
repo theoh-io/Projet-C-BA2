@@ -151,7 +151,7 @@ MyWindow::MyWindow() :
   m_Box_Top(Gtk::ORIENTATION_HORIZONTAL),
 	m_Box_Bottom(Gtk::ORIENTATION_HORIZONTAL), m_Button_Exit("Exit"),
 	m_Button_Open("Open"),m_Button_Save("Save"),m_Button_Start("Start"),
-  m_Button_Step("Step"),m_Label_Info("No game to run"),etat_simulation(false),
+  m_Button_Step("Step"),m_Label_Info("No game to run"),
 	timer_added(false),disconnect(false),timeout_value(500) // 500 ms = 0.5 seconds
 {
 	set_title("Dodgeball");
@@ -287,11 +287,11 @@ void MyWindow::on_button_start_clicked()
 	//bouton en mode start
 	if(not timer_added)
 	{
-		Glib::signal_timeout().connect( sigc::mem_fun(*this, &BasicTimer::on_timeout),
+		Glib::signal_timeout().connect( sigc::mem_fun(*this, &MyWindow::on_timeout),
 										timeout_value );
-		timer_added = true
+		timer_added = true;
 		disconnect = false;  //?
-		std::cout << "Timer added" << std::endl;
+		std::cout << "Timer added skusku" << std::endl;
 		//changer le label du bouton a stop
 		start_stop();
 	}
@@ -309,8 +309,8 @@ void MyWindow::on_button_start_clicked()
 
 void MyWindow::start_stop()
 {
-	if(timer_added) m_Button_Start="Stop";
-	else m_Button_Start="Start";
+	if(timer_added) m_Button_Start.set_label("Stop");
+	else m_Button_Start.set_label("Start");
 }
 /*
 void MyWindow::switch_etat()
@@ -328,14 +328,4 @@ bool MyWindow::get_etat()
 void MyWindow::on_button_step_clicked()
 {
 	std::cout<<"step clicked"<<std::endl;
-}
-
-auto app_creation()
-{
-  return Gtk::Application::create();
-}
-
- auto app_creation(int argc,char* argv,std::string "org.gtkmm.example")
-{
-	return Gtk::Application::create(argc, argv, "org.gtkmm.example");
 }
