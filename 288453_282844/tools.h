@@ -37,4 +37,16 @@ Coord chgmnt_coord(Coord pt_original);
 
 double tps_angle(int compteur);
 
+double pente_chemin(Coord j1, Coord j2);
+
+double calcul_b(Coord predateur, double pente);
+
+double fct_math(double angle, double x, double b);
+
+bool carre_dans_zone(Rond p1, Rond p2, Coord carre, int nbCell);
+
+double fonct_maths(double x, double pente, double b);
+
+bool sup_rect_obst(Coord obstacle, Rond j1, Rond j2, int nbCell);
+
 #endif
