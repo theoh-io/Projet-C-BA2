@@ -14,6 +14,8 @@
 using namespace std;
 
 #define NB_MIN_PLAYER				1
+#define ML					COEF_MARGE_JEU*(SIDE/nbCell)
+#define MOIT_HAUT 				SIDE/(2*nbCell)
 
 
 static int nbCell=0;
@@ -489,4 +491,52 @@ size_t get_taille_tab_ball()
 Ball get_ball_i(int i)
 {
 	return tab_ball[i];   //retourne la i+1eme balle
+}
+
+bool inters_obst_rect(Player proie, Player predateur, Obstacle obstacle)
+{
+	Coord c1 = indice_en_coord(obstacle.getcarre(),nbCell);
+	Coord p1, p2, p3, p4;   // points des 4 coins de l'obstacle
+	p1.x = c1.x + MOIT_HAUT;		// p1: haut droit, p2: bas droit, p3: bas gauche, p4: haut gauche 
+	p1.y = c1.y + MOIT_HAUT;			
+	p2.x = c1.x + MOIT_HAUT;
+	p2.y = c1.y - MOIT_HAUT;
+	p3.x = c1.x - MOIT_HAUT;
+	p3.y = c1.y + MOIT_HAUT;
+	p4.x = c1.x - MOIT_HAUT;
+	p4.y = c1.y - MOIT_HAUT;
+	if (proie.getPos_joueur().y==predateur.getPos_joueur().y)
+		if (sup_rect_obst(c1, predateur.getPos_joueur(), 
+												proie.getPos_joueur(), nbCell))
+			return true;
+	if (proie.getPos_joueur().y!=predateur.getPos_joueur().y)
+	{
+		double pente = pente_chemin(predateur.getCoord_joueur(), 
+													   proie.getCoord_joueur());
+		double b1 = calcul_b(predateur.getCoord_joueur(),pente) + predateur.getPos_joueur().rayon;
+		double b2 = calcul_b(predateur.getCoord_joueur(),pente) - predateur.getPos_joueur().rayon;
+		if ((fonct_maths(p1.x,pente,b1)<=p1.y+ML) && (fonct_maths(p1.x,pente,b1)>=p2.y+ML))
+			return true;
+		if ((fonct_maths(p3.x,pente,b1)<=p4.y+ML) && (fonct_maths(p3.x,pente,b1)>=p3.y+ML))
+			return true;
+		if ((fonct_maths(p1.x,pente,b2)<=p1.y+ML) && (fonct_maths(p1.x,pente,b2)>=p2.y+ML))
+			return true;
+		if ((fonct_maths(p3.x,pente,b2)<=p4.y+ML) && (fonct_maths(p3.x,pente,b2)>=p3.y+ML))
+			return true;
+	}
+	return false;
+}
+
+bool chemin_libre(Player predateur, Player proie)
+{
+	for (size_t i(0); i<tab_obst.size(); ++i)
+	{
+		if(carre_dans_zone(predateur.getPos_joueur(), 
+						   proie.getPos_joueur(), 														//on regarde si l'obstacle est dans la zone concernée pour réduire la complexité de calcul
+						   indice_en_coord(tab_obst[i].getcarre(),nbCell),
+						   nbCell))
+			if(inters_obst_rect(predateur, proie, tab_obst[i]))
+				return false;																				//si obstacle, le chemin n'est pas libre ainsi false, sinon true
+	}
+	return true;
 }
