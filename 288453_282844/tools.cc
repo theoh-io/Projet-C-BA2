@@ -75,3 +75,54 @@ double tps_angle(int compteur)
 	double angle;
 	return angle = ((compteur*TOUR_RAD)/MAX_COUNT)+TROIS_DEMI_PI;
 }
+
+double pente_chemin(Coord j1, Coord j2)
+{
+	return ((fabs(j1.x-j2.x)) / (fabs(j1.y-j2.y)));
+}
+
+double calcul_b(Coord predateur, double pente)
+{
+	return predateur.y - pente*predateur.y;
+}
+
+bool carre_dans_zone(Rond p1, Rond p2, Coord carre, int nbCell)					//faire un passage par référence pour faire une bonne copie
+{
+	if((p1.x<=p2.x) && (p1.y<=p2.y))
+	{
+		if((carre.x<p1.x-ML-MOIT_HAUT-p1.rayon) || 
+								(carre.x>p2.x+ML+MOIT_HAUT+p2.rayon))			//cas ou le point le plus haut est à gauche
+			return false;
+		if((carre.y<p1.y-ML-MOIT_HAUT-p1.rayon) || 
+								(carre.y<p2.y+ML+MOIT_HAUT+p2.rayon))	
+			return false;
+	}
+	if((p1.x>p2.x) && (p1.y<p2.y))
+	{
+		if((carre.x>p1.x+ML+MOIT_HAUT+p1.rayon) || 
+								(carre.x<p2.x-ML-MOIT_HAUT-p2.rayon))			//cas ou le point le plus haut est à droite
+			return false;
+		if((carre.y<p1.y-ML-MOIT_HAUT-p1.rayon) || 
+								(carre.y<p2.y+ML+MOIT_HAUT+p2.rayon))		
+			return false;	
+	}
+	return true;
+}
+
+double fonct_maths(double x, double pente, double b)
+{
+	return x*pente + b;
+}
+
+bool sup_rect_obst(Coord obstacle, Rond j1, Rond j2, int nbCell)
+{
+	if (fabs(obstacle.x-j1.x)<=ML+MOIT_HAUT+j1.rayon)
+	{
+		if(j1.y<j2.y)
+			if((obstacle.y>j1.y)&&(obstacle.y<j2.y))
+				return true;
+		if(j1.y>j2.y)
+			if((obstacle.y<j1.y)&&(obstacle.y>j2.y))
+				return true;
+	}
+}
