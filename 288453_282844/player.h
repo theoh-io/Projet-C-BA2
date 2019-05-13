@@ -20,7 +20,8 @@ class Player
 		double getOrdonnee() const;
 		int getCompteur() const;
 		Rond getPos_joueur() const;
-	    int getNb_touches() const;
+	    	int getNb_touches() const;
+		Coord getCoord_joueur() const;
 
 		// manipulateurs
 		void setAbcisse(double);
