@@ -8,17 +8,18 @@ class Ball
 {
 	public:
 		// constructeurs
-		Ball();	
+		Ball();
 		Ball(double abs, double ord, double a, int nbcell);
-				
+
 		// accesseurs
 		double getAngle_b() const;
-		Rond getPos_ball() const; 
-	
+		Rond getPos_ball() const;
+
 		// manipulateurs
 		void setAngle_b(double);
 		void setPos_ball(double,double);
-		
+		void deplacer_ball(double abcisse,double ordonnee);
+
 	private:
 		//declaration des attributs
 		double angle_b;

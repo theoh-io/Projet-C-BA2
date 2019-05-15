@@ -45,6 +45,7 @@ int main(int argc, char * argv[])
 			std::string s;
 			s = argv[MODE];
 			if(s=="Error")	lecture(argv[FICHIER]);
+			exit(0);
 		}
 		case ENTREE_STEP:
 		{
@@ -52,6 +53,7 @@ int main(int argc, char * argv[])
 			s = argv[MODE];
 			if(s=="Step") lecture(argv[FICHIER]);
 			//appeler la fonction de mise a jour pour 1 boucle
+			mise_a_jour();
 			save_file(argv[SORTIE]);
 		}
 	}

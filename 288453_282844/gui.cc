@@ -30,6 +30,18 @@ MyArea::~MyArea()
 {
 }
 
+
+void MyArea::refresh() 
+{
+  auto win = get_window();
+  if(win)
+  {
+    Gdk::Rectangle r(0,0, get_allocation().get_width(),
+									get_allocation().get_height());  
+	win->invalidate_rect(r,false);
+  }
+} 
+
 bool MyArea::on_draw(const Cairo::RefPtr<Cairo::Context>& cr)
 {
 	Gdk::Rectangle r(0,0, get_allocation().get_width(), get_allocation().get_height());
@@ -152,7 +164,7 @@ MyWindow::MyWindow() :
 	m_Box_Bottom(Gtk::ORIENTATION_HORIZONTAL), m_Button_Exit("Exit"),
 	m_Button_Open("Open"),m_Button_Save("Save"),m_Button_Start("Start"),
   m_Button_Step("Step"),m_Label_Info("No game to run"),
-	timer_added(false),disconnect(false),timeout_value(500) // 500 ms = 0.5 seconds
+	timer_added(false),disconnect(false),timeout_value(500)//DELTA_T) // 500 ms = 0.5 seconds
 {
 	set_title("Dodgeball");
 
@@ -192,22 +204,6 @@ MyWindow::MyWindow() :
 
 
 
-bool MyWindow::on_timeout()
-{
-  static unsigned int val(1);
-
-  if(disconnect)
-  {
-	  disconnect = false; // reset for next time a Timer is created
-
-	  return false; // End of Timer
-  }
-  //action a faire a chaque tic = mise a jour
-  std::cout << "This is timer value : " << val << std::endl;
-  ++val; // tic the clock
-
-  return true; // keep the Timer working
-}
 
 MyWindow::~MyWindow()
 {
@@ -291,8 +287,6 @@ void MyWindow::on_button_start_clicked()
 										timeout_value );
 		timer_added = true;
 		disconnect = false;  //?
-		std::cout << "Timer added skusku" << std::endl;
-		//changer le label du bouton a stop
 		start_stop();
 	}
 	//bouton mode stop
@@ -303,9 +297,22 @@ void MyWindow::on_button_start_clicked()
 		timer_added = false;
 		start_stop();
 	}
-
-
 }
+
+bool MyWindow::on_timeout()
+{
+  if(disconnect)
+  {
+	  disconnect = false; // reset for next time a Timer is created
+
+	  return false; // End of Timer
+  }
+  //action a faire a chaque tic = mise a jour
+  mise_a_jour();
+  m_Area.refresh();
+  return true; // keep the Timer working
+}
+
 
 void MyWindow::start_stop()
 {
@@ -328,4 +335,6 @@ bool MyWindow::get_etat()
 void MyWindow::on_button_step_clicked()
 {
 	std::cout<<"step clicked"<<std::endl;
+	m_Area.refresh();
+	mise_a_jour();
 }

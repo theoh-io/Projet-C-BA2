@@ -22,6 +22,7 @@ class Obstacle
 		//declaration des attributs
 		Carre pos_obs;
 
+
 };
 
 
