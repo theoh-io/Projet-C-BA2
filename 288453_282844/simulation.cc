@@ -19,9 +19,14 @@ using namespace std;
 #define MOIT_HAUT 				SIDE/(2*nbCell)
 
 static int nbCell=0;
+static int nbSpots;
 static vector<Obstacle> tab_obst;
 static vector<Player> tab_player;
 static vector <Ball> tab_ball;
+static vector <Spot> tab_spots;
+static vector<vector<int> > grille_terrain;
+static vector<vector<double> > tab_floyd;
+
 
 //états de l'automate de lecture
 enum Etat_lecture {NB_CELL,NB_PLAYER,PLAYER,NB_OBSTACLE,OBSTACLE,
@@ -53,6 +58,13 @@ void test_cible();
 void lancer_balles();
 void creer_balle(Player& p);
 void deplacement_balles();
+bool inters_obst_rect(Player proie, Player predateur, Obstacle obstacle);
+bool chemin_libre(Player predateur, Player proie);
+void remplis_grille();
+void tableau_spots();
+void rempl_voisins();
+void alg_floyd();
+Coord direction_pred(Player predateur);
 
 void mise_a_jour()
 {
@@ -300,6 +312,7 @@ void decodage_ligne(string line,bool mode,int& etat)
 			cout<<"la fin a été atteinte"<<endl;
 			break;
 	}
+	nbSpots=(nbCell*nbCell)-tab_obst.size();
 }
 
 bool falseposition(double x, double y)
@@ -608,10 +621,10 @@ bool inters_obst_rect(Player proie, Player predateur, Obstacle obstacle)
 			return true;
 	if (proie.getPos_joueur().y!=predateur.getPos_joueur().y)
 	{
-		double pente = pente_chemin(predateur.getCoord_joueur(),
-													   proie.getCoord_joueur());
-		double b1 = calcul_b(predateur.getCoord_joueur(),pente) + predateur.getPos_joueur().rayon;
-		double  2 = calcul_b(predateur.getCoord_joueur(),pente) - predateur.getPos_joueur().rayon;
+		double pente = pente_chemin(predateur.getCoord(),
+													   proie.getCoord());
+		double b1 = calcul_b(predateur.getCoord(),pente) + predateur.getPos_joueur().rayon;
+		double b2 = calcul_b(predateur.getCoord(),pente) - predateur.getPos_joueur().rayon;
 		if ((fonct_maths(p1.x,pente,b1)<=p1.y+ML) && (fonct_maths(p1.x,pente,b1)>=p2.y+ML))
 			return true;
 		if ((fonct_maths(p3.x,pente,b1)<=p4.y+ML) && (fonct_maths(p3.x,pente,b1)>=p3.y+ML))
@@ -640,8 +653,11 @@ bool chemin_libre(Player predateur, Player proie)
 
 void remplis_grille()
 {
-	///static grille_terrain dans la fonction au dessus
-	//remplissage grille
+	for(int k(0); k<nbCell; ++k)
+	{
+		vector<int> colonne(nbCell,0);
+		grille_terrain.push_back(colonne);
+	}
 	for(size_t i(0); i<tab_obst.size(); ++i)
 	{
 		grille_terrain[tab_obst[i].getcarre().ligne][tab_obst[i].getcarre().ligne] = 1;
@@ -671,6 +687,12 @@ void tableau_spots()
 
 void rempl_voisins()
 {
+	for(int k(0); k<nbSpots; ++k)
+	{
+		vector<double> colonne(nbSpots,nbCell*nbCell);
+		tab_floyd.push_back(colonne);
+	}
+	int debut_i, fin_i, debut_j, fin_j, ligne, colonne;
 	for (size_t k(0); k<tab_spots.size() ; ++k)
 	{
 		debut_i = 0;
@@ -686,46 +708,46 @@ void rempl_voisins()
 
 		for (int i(debut_i); i<fin_i ; ++i)
 		{
-			for(size_t j(debut_j); j<fin_i; ++j)
+			for(int j(debut_j); j<fin_i; ++j)
 			{
 				if(grille_terrain[ligne-1+i][colonne-1+j]==0)
 				{
 					if((i==1)||(j==1))
-						tab_floyd[tab_spots[k].indice][nbCell*(ligne+i)+colonne+1]==1;
+						tab_floyd[tab_spots[k].numero][nbCell*(ligne+i)+colonne+1]=1;
 				}
 				else
 				{
 					if((i==0)&&(j==0)) //haut gauche
 					{
-						tab_floyd[tab_spots[k].indice][nbCell*(ligne+i)+colonne+1]==2;
+						tab_floyd[tab_spots[k].numero][nbCell*(ligne+i)+colonne+1]=2;
 						if((grille_terrain[ligne][colonne-1]==1)&&(grille_terrain[ligne-1][colonne]==1))
-							tab_floyd[tab_spots[k].indice][nbCell*(ligne+i)+colonne+1]==nbCell*nbCell;
+							tab_floyd[tab_spots[k].numero][nbCell*(ligne+i)+colonne+1]=nbCell*nbCell;
 						if((grille_terrain[ligne][colonne-1]==1)||(grille_terrain[ligne-1][colonne]==1))
-							tab_floyd[tab_spots[k].indice][nbCell*(ligne+i)+colonne+1]==1.41;
+							tab_floyd[tab_spots[k].numero][nbCell*(ligne+i)+colonne+1]=1.41;
 					}
 					if((i==0)&&(j==2))	//haut droite
 					{
-						tab_floyd[tab_spots[k].indice][nbCell*(ligne+i)+colonne+1]==2;
+						tab_floyd[tab_spots[k].numero][nbCell*(ligne+i)+colonne+1]=2;
 						if((grille_terrain[ligne+1][colonne]==1)&&(grille_terrain[ligne][colonne+1]==1))
-							tab_floyd[tab_spots[k].indice][nbCell*(ligne+i)+colonne+1]==nbCell*nbCell;
+							tab_floyd[tab_spots[k].numero][nbCell*(ligne+i)+colonne+1]=nbCell*nbCell;
 						if((grille_terrain[ligne+1][colonne]==1)||(grille_terrain[ligne][colonne+1]==1))
-							tab_floyd[tab_spots[k].indice][nbCell*(ligne+i)+colonne+1]==1.41;
+							tab_floyd[tab_spots[k].numero][nbCell*(ligne+i)+colonne+1]=1.41;
 					}
 					if((i==2)&&(j==2))	//bas droite
 					{
-						tab_floyd[tab_spots[k].indice][nbCell*(ligne+i)+colonne+1]==2;
+						tab_floyd[tab_spots[k].numero][nbCell*(ligne+i)+colonne+1]=2;
 						if((grille_terrain[ligne][colonne+1]==1)&&(grille_terrain[ligne-1][colonne]==1))
-							tab_floyd[tab_spots[k].indice][nbCell*(ligne+i)+colonne+1]==nbCell*nbCell;
+							tab_floyd[tab_spots[k].numero][nbCell*(ligne+i)+colonne+1]=nbCell*nbCell;
 						if((grille_terrain[ligne][colonne+1]==1)||(grille_terrain[ligne-1][colonne]==1))
-							tab_floyd[tab_spots[k].indice][nbCell*(ligne+i)+colonne+1]==1.41;
+							tab_floyd[tab_spots[k].numero][nbCell*(ligne+i)+colonne+1]=1.41;
 					}
 					if((i==2)&&(j==0))	//bas gauche
 					{
-						tab_floyd[tab_spots[k].indice][nbCell*(ligne+i)+colonne+1]==2;
+						tab_floyd[tab_spots[k].numero][nbCell*(ligne+i)+colonne+1]=2;
 						if((grille_terrain[ligne][colonne-1]==1)&&(grille_terrain[ligne-1][colonne]==1))
-							tab_floyd[tab_spots[k].indice][nbCell*(ligne+i)+colonne+1]==nbCell*nbCell;
+							tab_floyd[tab_spots[k].numero][nbCell*(ligne+i)+colonne+1]=nbCell*nbCell;
 						if((grille_terrain[ligne][colonne-1]==1)||(grille_terrain[ligne-1][colonne]==1))
-							tab_floyd[tab_spots[k].indice][nbCell*(ligne+i)+colonne+1]==1.41;
+							tab_floyd[tab_spots[k].numero][nbCell*(ligne+i)+colonne+1]=1.41;
 					}
 				}
 			}
@@ -735,8 +757,9 @@ void rempl_voisins()
 
 void alg_floyd()
 {
-	//////tab_floyd initialisé aux valeurs nbCell*nbCell
-	for(size_t k(0); k<nbSpots ; ++k)
+	
+	//////tab_floyd initialisé aux valeurs nbCel
+	for(int k(0); k<nbSpots ; ++k)
 	{
 		tab_floyd[k][k]=0;
 	}
@@ -746,26 +769,27 @@ void alg_floyd()
 		{
 			for (int j = 0; j < nbSpots; ++j)
 			{
-				if(tab_floyd[i][j]>dist[i][m]+dist[m][j])
-					tab_floyd[i][j]=dist[i][m]+dist[m][j]
+				if(tab_floyd[i][j]>tab_floyd[i][m]+tab_floyd[m][j])
+					tab_floyd[i][j]=tab_floyd[i][m]+tab_floyd[m][j];
 			}
 		}
 	}
 }
 
-Coord (Player predateur)
+Coord direction_pred(Player predateur)
 {
 	//a deja en attribut sa proie
 	//choix du prochain spot, qui sera transformé en coord:
 	//
 	Spot spot_pred;
 	Spot spot_proie;
+	int debut_i,debut_j,fin_i,fin_j;
 	for(int k(0);k<nbSpots;++k)
 	{
 		Carre carre;
 		carre.ligne = tab_spots[k].ligne;
 		carre.ligne = tab_spots[k].colonne;
-		centre_carre = indice_en_coord(carre);
+		Coord centre_carre = indice_en_coord(carre,nbCell);
 		if((fabs(centre_carre.x-predateur.getPos_joueur().x)<=MOIT_HAUT)&&
 		   (fabs(centre_carre.y-predateur.getPos_joueur().y)<=MOIT_HAUT))
 			spot_pred = tab_spots[k];
@@ -775,11 +799,11 @@ Coord (Player predateur)
 		Carre carre;
 		carre.ligne = tab_spots[m].ligne;
 		carre.ligne = tab_spots[m].colonne;
-		centre_carre = indice_en_coord(carre);
-		Player proie = predateur.getProie();
-		if((fabs(centre_carre.x-proie.getPos_joueur().x)<=MOIT_HAUT)&&
-		   (fabs(centre_carre.y-proie.getPos_joueur().y)<=MOIT_HAUT))
-			spot_proie = tab_spots[k];
+		Coord centre_carre = indice_en_coord(carre,nbCell);
+		Rond proie = predateur.getCible();
+		if((fabs(centre_carre.x-proie.x)<=MOIT_HAUT)&&
+		   (fabs(centre_carre.y-proie.y)<=MOIT_HAUT))
+			spot_proie = tab_spots[m];
 	}
 	int ligne = spot_pred.ligne;
 	int colonne = spot_pred.colonne;
@@ -791,23 +815,32 @@ Coord (Player predateur)
 	if(ligne==nbCell-1) fin_i=1;
 	if(colonne==0) debut_j = 1;
 	if(colonne==nbCell-1) fin_j=1;
-	double dist_min=tab_floyd[spot_proie.predateur][spot_proie.numero]
+	double dist_min=tab_floyd[spot_pred.numero][spot_proie.numero];
 	Carre empl_choisi;
 	for (int i(debut_i); i<fin_i ; ++i)
 	{
-		for(size_t j(debut_j); j<fin_i; ++j)
+		for(int j(debut_j); j<fin_i; ++j)
 		{
 			if(grille_terrain[ligne-1+i][colonne-1+j]==0)
 			{
 				if(tab_floyd[nbCell*(ligne+i)+colonne+1][spot_proie.numero]
-					<min_proie)
+					<dist_min)
 				{
-					min_proie = tab_floyd[nbCell*(ligne+i)+colonne+1][spot_proie.numero];
+					dist_min = tab_floyd[nbCell*(ligne+i)+colonne+1][spot_proie.numero];
 					empl_choisi.ligne=ligne-1+i;
 					empl_choisi.colonne=colonne-1+j;
 				}
 			}
 		}
 	}
-	return indice_en_coord(empl_choisi);
+	return indice_en_coord(empl_choisi,nbCell);
+}
+
+void init_tab()
+{
+	nbSpots=(nbCell*nbCell)-tab_obst.size();
+	void tableau_spots();
+	remplis_grille();
+	rempl_voisins();
+	alg_floyd();
 }

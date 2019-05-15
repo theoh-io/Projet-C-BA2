@@ -23,6 +23,12 @@ struct Rond
 	double rayon;
 };
 
+struct Spot
+{
+	int ligne;
+	int colonne;
+	int numero;
+};
 
 Coord indice_en_coord(Carre c, int nbCell);
 

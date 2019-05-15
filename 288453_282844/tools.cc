@@ -168,10 +168,5 @@ bool sup_rect_obst(Coord obstacle, Rond j1, Rond j2, int nbCell)
 			if((obstacle.y<j1.y)&&(obstacle.y>j2.y))
 				return true;
 	}
-}
-
-Carre coord_en_indice(Coord point, int nbCell)
-{
-	double a=(point.x+DIM_MAX-MOIT_HAUT)/(SIDE/nbCell)
-
+	return false;
 }
