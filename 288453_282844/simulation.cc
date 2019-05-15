@@ -81,7 +81,7 @@ void choix_cible()
 	for(auto player:tab_player)
 	{
 		r1.x=player.getPos_joueur().x;
-		r1.y=player.getPos_joueur().y
+		r1.y=player.getPos_joueur().y;
   	for(auto element: tab_player)
 	  {
 		  r2.x = element.getPos_joueur().x;
@@ -514,7 +514,7 @@ bool inters_obst_rect(Player proie, Player predateur, Obstacle obstacle)
 		double pente = pente_chemin(predateur.getCoord_joueur(), 
 													   proie.getCoord_joueur());
 		double b1 = calcul_b(predateur.getCoord_joueur(),pente) + predateur.getPos_joueur().rayon;
-		double b2 = calcul_b(predateur.getCoord_joueur(),pente) - predateur.getPos_joueur().rayon;
+		double  2 = calcul_b(predateur.getCoord_joueur(),pente) - predateur.getPos_joueur().rayon;
 		if ((fonct_maths(p1.x,pente,b1)<=p1.y+ML) && (fonct_maths(p1.x,pente,b1)>=p2.y+ML))
 			return true;
 		if ((fonct_maths(p3.x,pente,b1)<=p4.y+ML) && (fonct_maths(p3.x,pente,b1)>=p3.y+ML))
@@ -539,4 +539,178 @@ bool chemin_libre(Player predateur, Player proie)
 				return false;																				//si obstacle, le chemin n'est pas libre ainsi false, sinon true
 	}
 	return true;
+}
+
+void remplis_grille()
+{
+	///static grille_terrain dans la fonction au dessus
+	//remplissage grille
+	for(size_t i(0); i<tab_obst.size(); ++i)
+	{
+		grille_terrain[tab_obst[i].getcarre().ligne][tab_obst[i].getcarre().ligne] = 1;
+	}
+}
+
+void tableau_spots()
+{
+	//vector<Spots> tab_spots(nbSpots)
+	int compteur(0);
+	for (int i(0); i<nbCell ; ++i)
+	{
+		for (int j(0) ; j<nbCell ; ++j)
+		{
+			if(grille_terrain[i][j]==0)
+			{
+				compteur++;
+				Spot spot;
+				spot.ligne=i;
+				spot.colonne=j;
+				spot.numero=compteur;
+				tab_spots.push_back(spot);
+			}
+		}
+	}
+}
+
+void rempl_voisins()
+{
+	for (size_t k(0); k<tab_spots.size() ; ++k)
+	{
+		debut_i = 0;
+		fin_i=0;
+		debut_j = 2;
+		fin_j=2;
+		tab_spots[k].ligne=ligne;
+		tab_spots[k].colonne=colonne;
+		if(ligne==0) debut_i = 1;
+		if(ligne==nbCell-1) fin_i=1;
+		if(colonne==0) debut_j = 1;
+		if(colonne==nbCell-1) fin_j=1;
+
+		for (int i(debut_i); i<fin_i ; ++i)
+		{
+			for(size_t j(debut_j); j<fin_i; ++j)
+			{
+				if(grille_terrain[ligne-1+i][colonne-1+j]==0)
+				{
+					if((i==1)||(j==1))
+						tab_floyd[tab_spots[k].indice][nbCell*(ligne+i)+colonne+1]==1;
+				}
+				else
+				{
+					if((i==0)&&(j==0)) //haut gauche
+					{
+						tab_floyd[tab_spots[k].indice][nbCell*(ligne+i)+colonne+1]==2;
+						if((grille_terrain[ligne][colonne-1]==1)&&(grille_terrain[ligne-1][colonne]==1))
+							tab_floyd[tab_spots[k].indice][nbCell*(ligne+i)+colonne+1]==nbCell*nbCell;
+						if((grille_terrain[ligne][colonne-1]==1)||(grille_terrain[ligne-1][colonne]==1))
+							tab_floyd[tab_spots[k].indice][nbCell*(ligne+i)+colonne+1]==1.41;
+					}
+					if((i==0)&&(j==2))	//haut droite
+					{
+						tab_floyd[tab_spots[k].indice][nbCell*(ligne+i)+colonne+1]==2;
+						if((grille_terrain[ligne+1][colonne]==1)&&(grille_terrain[ligne][colonne+1]==1))
+							tab_floyd[tab_spots[k].indice][nbCell*(ligne+i)+colonne+1]==nbCell*nbCell;
+						if((grille_terrain[ligne+1][colonne]==1)||(grille_terrain[ligne][colonne+1]==1))
+							tab_floyd[tab_spots[k].indice][nbCell*(ligne+i)+colonne+1]==1.41;
+					}
+					if((i==2)&&(j==2))	//bas droite
+					{
+						tab_floyd[tab_spots[k].indice][nbCell*(ligne+i)+colonne+1]==2;
+						if((grille_terrain[ligne][colonne+1]==1)&&(grille_terrain[ligne-1][colonne]==1))
+							tab_floyd[tab_spots[k].indice][nbCell*(ligne+i)+colonne+1]==nbCell*nbCell;
+						if((grille_terrain[ligne][colonne+1]==1)||(grille_terrain[ligne-1][colonne]==1))
+							tab_floyd[tab_spots[k].indice][nbCell*(ligne+i)+colonne+1]==1.41;
+					}
+					if((i==2)&&(j==0))	//bas gauche
+					{
+						tab_floyd[tab_spots[k].indice][nbCell*(ligne+i)+colonne+1]==2;
+						if((grille_terrain[ligne][colonne-1]==1)&&(grille_terrain[ligne-1][colonne]==1))
+							tab_floyd[tab_spots[k].indice][nbCell*(ligne+i)+colonne+1]==nbCell*nbCell;
+						if((grille_terrain[ligne][colonne-1]==1)||(grille_terrain[ligne-1][colonne]==1))
+							tab_floyd[tab_spots[k].indice][nbCell*(ligne+i)+colonne+1]==1.41;
+					}
+				}		
+			}
+		}
+	}
+}
+
+void alg_floyd()
+{
+	//////tab_floyd initialisé aux valeurs nbCell*nbCell
+	for(size_t k(0); k<nbSpots ; ++k)
+	{
+		tab_floyd[k][k]=0;
+	}
+	for (int m = 0; m < nbSpots; ++m)
+	{
+		for (int i = 0; i < nbSpots; ++i)
+		{
+			for (int j = 0; j < nbSpots; ++j)
+			{
+				if(tab_floyd[i][j]>dist[i][m]+dist[m][j])
+					tab_floyd[i][j]=dist[i][m]+dist[m][j]
+			}
+		}
+	}
+}
+
+Coord (Player predateur)
+{
+	//a deja en attribut sa proie
+	//choix du prochain spot, qui sera transformé en coord: 
+	//
+	Spot spot_pred;
+	Spot spot_proie;
+	for(int k(0);k<nbSpots;++k)
+	{
+		Carre carre;
+		carre.ligne = tab_spots[k].ligne;
+		carre.ligne = tab_spots[k].colonne;
+		centre_carre = indice_en_coord(carre);
+		if((fabs(centre_carre.x-predateur.getPos_joueur().x)<=MOIT_HAUT)&&
+		   (fabs(centre_carre.y-predateur.getPos_joueur().y)<=MOIT_HAUT))
+			spot_pred = tab_spots[k];
+	}	
+	for(int m(0);m<nbSpots;++m)
+	{
+		Carre carre;
+		carre.ligne = tab_spots[m].ligne;
+		carre.ligne = tab_spots[m].colonne;
+		centre_carre = indice_en_coord(carre);
+		Player proie = predateur.getProie();
+		if((fabs(centre_carre.x-proie.getPos_joueur().x)<=MOIT_HAUT)&&
+		   (fabs(centre_carre.y-proie.getPos_joueur().y)<=MOIT_HAUT))
+			spot_proie = tab_spots[k];
+	}	
+	int ligne = spot_pred.ligne;
+	int colonne = spot_pred.colonne;
+	debut_i = 0;
+	fin_i=0;
+	debut_j = 2;
+	fin_j=2;
+	if(ligne==0) debut_i = 1;
+	if(ligne==nbCell-1) fin_i=1;
+	if(colonne==0) debut_j = 1;
+	if(colonne==nbCell-1) fin_j=1;
+	double dist_min=tab_floyd[spot_proie.predateur][spot_proie.numero]
+	Carre empl_choisi;
+	for (int i(debut_i); i<fin_i ; ++i)
+	{
+		for(size_t j(debut_j); j<fin_i; ++j)
+		{
+			if(grille_terrain[ligne-1+i][colonne-1+j]==0)
+			{
+				if(tab_floyd[nbCell*(ligne+i)+colonne+1][spot_proie.numero]
+					<min_proie)
+				{
+					min_proie = tab_floyd[nbCell*(ligne+i)+colonne+1][spot_proie.numero];
+					empl_choisi.ligne=ligne-1+i;
+					empl_choisi.colonne=colonne-1+j;
+				}
+			}
+		}
+	}
+	return indice_en_coord(empl_choisi);
 }
