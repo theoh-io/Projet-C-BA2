@@ -126,3 +126,9 @@ bool sup_rect_obst(Coord obstacle, Rond j1, Rond j2, int nbCell)
 				return true;
 	}
 }
+
+Carre coord_en_indice(Coord point, int nbCell)
+{
+	double a=(point.x+DIM_MAX-MOIT_HAUT)/(SIDE/nbCell)
+	
+}
