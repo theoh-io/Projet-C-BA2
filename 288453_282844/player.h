@@ -13,15 +13,17 @@ class Player
 		Player();
 		Player(double abs, double ord);
 		Player(double abs, double ord, int total1, int total2, int nbcell);
-		Player(const Player& autre);
 		virtual ~Player();
 		// accesseurs
 		double getAbcisse() const;
 		double getOrdonnee() const;
 		int getCompteur() const;
 		Rond getPos_joueur() const;
-	    	int getNb_touches() const;
-		Coord getCoord_joueur() const;
+		Coord getCoord() const;
+		Coord getCible_coord() const;
+	    int getNb_touches() const;
+		Rond getCible() const;
+		Rond getfutur_pos() const;
 
 		// manipulateurs
 		void setAbcisse(double);
@@ -29,13 +31,17 @@ class Player
 		void setCompteur(double);
 		void setNb_touches(int);
 		void setPos_joueur(double, double);
-		void set_cible(Player* autre);
-
+		void set_cible(Rond autre);
+        void bouger_joueur(double,double);
+		void valider_deplacement();
+		bool upCompteur();
+		void resetCompteur();
 
 	private:
 		//declaration des attributs
-		Player* cible=nullptr;
+		Rond cible;
 		Rond pos_joueur;
+		Rond futur_pos;
 		int compteur;
 		int nb_touches;
 

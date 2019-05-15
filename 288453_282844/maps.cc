@@ -28,3 +28,4 @@ void Obstacle::setcarre(int i, int j, double dim)
 	pos_obs.taille = dim;
 }
 
+

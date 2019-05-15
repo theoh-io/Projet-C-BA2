@@ -25,5 +25,7 @@ size_t get_taille_tab_obst();
 size_t get_taille_tab_player();
 size_t get_taille_tab_ball();
 
+void mise_a_jour();
+
 
 #endif

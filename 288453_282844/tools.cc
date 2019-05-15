@@ -1,4 +1,6 @@
 #include "tools.h"
+#include <iostream>
+#include <cmath>
 
 
 #define ML					 	(COEF_MARGE_JEU/2)*(SIDE/nbCell)
@@ -6,6 +8,7 @@
 #define MOIT_HAUT 				SIDE/(2*nbCell)
 #define TOUR_RAD				2*M_PI
 #define TROIS_DEMI_PI			3*M_PI/2
+#define PRECISION				0.001 //tests d'egalite sur double
 
 enum EtatsSupp {JJ, BB, JB};
 
@@ -18,6 +21,18 @@ Coord indice_en_coord(Carre c, int nbCell)
 	return c1;
 }
 
+bool supp_cercles_en_jeu(Rond co1, Rond co2, int nbCell)
+{
+	Coord r1, r2;
+	r1.x = co1.x;
+	r1.y = co1.y;
+	r2.x = co2.x;
+	r2.y = co2.y;
+	//r1.rayon=COEF_RAYON_JOUEUR*(SIDE/nbCell);
+	if(dist_deux_points(r1,r2)<(co1.rayon+co2.rayon+MJ)) return true;
+	else return false;
+}
+
 bool supp_cercles(Rond co1, Rond co2, int nbCell)
 {
 	Coord r1, r2;
@@ -25,7 +40,7 @@ bool supp_cercles(Rond co1, Rond co2, int nbCell)
 	r1.y = co1.y;
 	r2.x = co2.x;
 	r2.y = co2.y;
-	if(dist_deux_points(r1,r2)<(co1.rayon+co2.rayon) + ML) return true;
+	if(dist_deux_points(r1,r2)<(co1.rayon+co2.rayon+ ML)) return true;
 	else return false;
 }
 
@@ -76,59 +91,30 @@ double tps_angle(int compteur)
 	return angle = ((compteur*TOUR_RAD)/MAX_COUNT)+TROIS_DEMI_PI;
 }
 
-double pente_chemin(Coord j1, Coord j2)
+double norme(Coord v)
 {
-	return ((fabs(j1.x-j2.x)) / (fabs(j1.y-j2.y)));
+	double norme=sqrt(v.x*v.x+v.y*v.y);
+	return norme;
 }
 
-double calcul_b(Coord predateur, double pente)
+double calcul_angle(Coord pred, Coord cible)
 {
-	return predateur.y - pente*predateur.y;
-}
-
-bool carre_dans_zone(Rond p1, Rond p2, Coord carre, int nbCell)					//faire un passage par référence pour faire une bonne copie
-{
-	if((p1.x<=p2.x) && (p1.y<=p2.y))
+	double tan_a(0);
+	tan_a=(cible.y-pred.y)/(cible.x-pred.x);
+	if(std::abs(pred.y-cible.y)<PRECISION) 
 	{
-		if((carre.x<p1.x-ML-MOIT_HAUT-p1.rayon) || 
-								(carre.x>p2.x+ML+MOIT_HAUT+p2.rayon))			//cas ou le point le plus haut est à gauche
-			return false;
-		if((carre.y<p1.y-ML-MOIT_HAUT-p1.rayon) || 
-								(carre.y<p2.y+ML+MOIT_HAUT+p2.rayon))	
-			return false;
+		if(pred.x>=cible.x) return M_PI;
+		else return 0;
 	}
-	if((p1.x>p2.x) && (p1.y<p2.y))
+	if(tan_a>=0)
 	{
-		if((carre.x>p1.x+ML+MOIT_HAUT+p1.rayon) || 
-								(carre.x<p2.x-ML-MOIT_HAUT-p2.rayon))			//cas ou le point le plus haut est à droite
-			return false;
-		if((carre.y<p1.y-ML-MOIT_HAUT-p1.rayon) || 
-								(carre.y<p2.y+ML+MOIT_HAUT+p2.rayon))		
-			return false;	
+		if(cible.y>=pred.y) return atan(tan_a);
+		else return M_PI+atan(tan_a);
 	}
-	return true;
-}
-
-double fonct_maths(double x, double pente, double b)
-{
-	return x*pente + b;
-}
-
-bool sup_rect_obst(Coord obstacle, Rond j1, Rond j2, int nbCell)
-{
-	if (fabs(obstacle.x-j1.x)<=ML+MOIT_HAUT+j1.rayon)
+	else
 	{
-		if(j1.y<j2.y)
-			if((obstacle.y>j1.y)&&(obstacle.y<j2.y))
-				return true;
-		if(j1.y>j2.y)
-			if((obstacle.y<j1.y)&&(obstacle.y>j2.y))
-				return true;
-	}
-}
-
-Carre coord_en_indice(Coord point, int nbCell)
-{
-	double a=(point.x+DIM_MAX-MOIT_HAUT)/(SIDE/nbCell)
+	  if(cible.y>=pred.y) return M_PI+atan(tan_a);
+	  else return atan(tan_a);
+    }
 	
 }

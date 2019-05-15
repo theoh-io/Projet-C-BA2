@@ -22,18 +22,23 @@ Ball::Ball(){
 
 // accesseurs
 
-double Ball::getAngle_b () const 
-{ 
+double Ball::getAngle_b () const
+{
 	return angle_b;
 }
 
-Rond Ball::getPos_ball()const 
-{ 
+Rond Ball::getPos_ball()const
+{
 	return pos_ball;
 }
 
 
 // manipulateurs
+void Ball::deplacer_ball(double abcisse, double ordonnee)
+{
+	pos_ball.x += abcisse;
+	pos_ball.y += ordonnee;
+}
 
 void Ball::setAngle_b(double alpha)
 {
@@ -45,8 +50,3 @@ void Ball::setPos_ball(double x1, double y1)
 	pos_ball.x = x1;
 	pos_ball.y = y1;
 }
-
-
-
-
-
