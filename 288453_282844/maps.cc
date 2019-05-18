@@ -27,5 +27,9 @@ void Obstacle::setcarre(int i, int j, double dim)
 	pos_obs.colonne = j;
 	pos_obs.taille = dim;
 }
-
-
+/*
+void Obstacle::destroy()
+{
+	mort=true;
+}
+*/

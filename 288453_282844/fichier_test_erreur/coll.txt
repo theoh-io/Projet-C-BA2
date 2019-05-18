@@ -1,0 +1,15 @@
+# fichier correct
+
+10
+
+# joueurs
+3
+50 0 4 10
+0 0 4 10
+0 -50 4 10
+
+# obstacles
+0
+
+# aucune balle
+0

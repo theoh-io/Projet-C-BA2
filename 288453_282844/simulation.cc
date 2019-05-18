@@ -15,8 +15,8 @@
 using namespace std;
 
 #define NB_MIN_PLAYER				1
-#define ML					COEF_MARGE_JEU*(SIDE/nbCell)
-#define MOIT_HAUT 				SIDE/(2*nbCell)
+#define ML							COEF_MARGE_JEU*(SIDE/nbCell)
+#define MOIT_HAUT 					SIDE/(2*nbCell)
 
 static int nbCell=0;
 static int nbSpots;
@@ -26,7 +26,6 @@ static vector <Ball> tab_ball;
 static vector <Spot> tab_spots;
 static vector<vector<int> > grille_terrain;
 static vector<vector<double> > tab_floyd;
-
 
 //états de l'automate de lecture
 enum Etat_lecture {NB_CELL,NB_PLAYER,PLAYER,NB_OBSTACLE,OBSTACLE,
@@ -58,22 +57,108 @@ void test_cible();
 void lancer_balles();
 void creer_balle(Player& p);
 void deplacement_balles();
-bool inters_obst_rect(Player proie, Player predateur, Obstacle obstacle);
-bool chemin_libre(Player predateur, Player proie);
+void collisions_balles();
+void destroy_balle(int i);
+void destroy_obstacle(int k);
+void destroy_player();
+bool inters_obst_rect(Rond proie, Player predateur, Coord obstacle);
+bool chemin_libre(Player predateur);
 void remplis_grille();
-void tableau_spots();
-void rempl_voisins();
-void alg_floyd();
-Coord direction_pred(Player predateur);
+void tableau_spots(); 
+void rempl_voisins(); 
+void alg_floyd(); 
+Coord direction_pred(Player predateur); 
+void init_tab(); 
+void affich_test(); 
+
 
 void mise_a_jour()
 {
   analyse();
   lancer_balles();
   deplacement_balles();
-	//detection collisions balles
-	//suppression des éléments
+  collisions_balles();
+  destroy_player();
 }
+
+void collisions_balles()
+{
+	for(size_t i(tab_ball.size());i>0;--i)
+	{
+		for(size_t j(tab_player.size());j>0;--j)
+		{
+			if(supp_cercles_en_jeu(tab_ball[i-1].getPos_ball(),tab_player[j-1].getPos_joueur(), nbCell))
+			{
+				tab_player[j-1].shot();
+				destroy_balle(i-1);
+				break;
+			}
+		}
+	}
+	for(size_t i(tab_ball.size());i>0;--i)
+	{
+		for(size_t k(tab_obst.size());k>0;k--)
+		{
+			if(supp_cercle_carre(tab_ball[i-1].getPos_ball(),tab_obst[k-1].getcarre() ,nbCell))
+			{
+				destroy_balle(i-1);
+				destroy_obstacle(k-1);
+				break;
+			}
+		}
+	}
+	for(size_t i(tab_ball.size());i>0;--i)
+	{
+		for(size_t l(tab_ball.size());l>0;--l)
+		{
+			if(i != l)
+			{
+			  if(supp_cercles_en_jeu(tab_ball[i-1].getPos_ball(),tab_ball[l-1].getPos_ball(), nbCell))
+			  {
+				  if(l>i)
+				  {
+				    destroy_balle(l-1);
+				    destroy_balle(i-1);
+			      }
+			      else
+			      {
+				    destroy_balle(i-1);
+				    destroy_balle(l-1);
+			      }
+			      --i;
+			      break;
+			  }
+		    }
+		}
+	}						
+}
+
+
+void destroy_balle(int i)
+{
+	swap(tab_ball[i],tab_ball.back());
+	tab_ball.pop_back();
+}
+
+void destroy_obstacle(int k)
+{
+	swap(tab_obst[k],tab_obst.back());
+	tab_obst.pop_back();
+	void init_tab(); 
+}
+
+void destroy_player()
+{
+	for(size_t i(tab_player.size());i>0;--i)
+	{
+		if(tab_player[i-1].getNb_touches()==0)
+		{
+			swap(tab_player[i-1],tab_player.back());
+			tab_player.pop_back();
+		}
+	}
+}
+	
 
 void analyse()
 {
@@ -94,7 +179,7 @@ void choix_cible()
 		r1.x=tab_player[i].getPos_joueur().x;
 		r1.y=tab_player[i].getPos_joueur().y;
   	  for(size_t j(0);j<tab_player.size();++j)
-	  {
+	  {	
 		  r2.x = tab_player[j].getPos_joueur().x;
 		  r2.y = tab_player[j].getPos_joueur().y;
 		  if((dist_deux_points(r1,r2)>tab_player[j].getPos_joueur().rayon)
@@ -111,7 +196,7 @@ void choix_cible()
 void test_cible()
 {
 	for(size_t j(0);j<tab_player.size();++j)
-	{
+	{	
 	  cout<<"position p "<<tab_player[j].getCoord().x<<"  "<<tab_player[j].getCoord().y<<endl;
 	  cout<<"position c:"<<tab_player[j].getCible().x<<"  "<<tab_player[j].getCible().y<<endl;
 	  cout<<"future pos vaut"<<tab_player[j].getfutur_pos().x<<"  "<<tab_player[j].getfutur_pos().y<<endl;
@@ -120,14 +205,14 @@ void test_cible()
 
 void direction_deplacement()
 {
+  Coord direction;
+  Coord direction_normee;
+  double n;
   for(size_t j(0);j<tab_player.size();++j)
   {
-    if(true)//test_ligne_droite)
+    if(chemin_libre(tab_player[j]))
     {
       //deplacer tout droit vers cible
-		  Coord direction;
-		  Coord direction_normee;
-		  double n;
 		  direction.x=(tab_player[j].getCible().x-tab_player[j].getAbcisse());
 		  direction.y=(tab_player[j].getCible().y-tab_player[j].getOrdonnee());
 		  n=norme(direction);
@@ -135,12 +220,23 @@ void direction_deplacement()
 		  direction_normee.y=direction.y/n;
 		  futur_deplacement(tab_player[j],direction_normee);
     }
-   // else
-		//{
-      //deplacer dans la direction donnée par algo de Floyd
-	   // Coord direction; //direction=Algo Floyd
-	   // futur_deplacement(tab_player[j],direction);
-    //}
+   else
+        //deplacer dans la direction donnée par algo de Floyd
+        {
+    	  cout<<"joueur numero"<<j+1<<
+		  "n'est pas chemin libre vers sa proie" <<endl;
+		  direction=direction_pred(tab_player[j]);
+		  n=norme(direction);
+		  direction_normee.x=direction.x/n;
+		  direction_normee.y=direction.y/n;
+		  cout<<"joueur numero"<<j+1<<
+		  "est sorti de la fonction direction_pred" <<endl;
+		  cout<<"norme "<<n<<endl;
+		  cout<<"direction "<<direction.x<<"  "<<direction.y<<endl;
+		  cout<<"direction du mouvement: "<<direction_normee.x<<" "<<direction_normee.y<<endl;
+
+	      futur_deplacement(tab_player[j],direction_normee);
+	    }
   }
 }
 
@@ -153,7 +249,7 @@ void futur_deplacement(Player &p, Coord direction)
 
 void validation_deplacement()
 {
-
+  
   for(size_t i(0);i<tab_player.size();++i)
   {
 	//traitement contact joueur-joueur(voir 3.2.2 modifier la fonction supperposition marge MJ+prediction déplacement ?)
@@ -166,7 +262,7 @@ void lancer_balles()
 {
   for(size_t i(0);i<tab_player.size();++i)
 	{
-	  if(true)//test_ligne_droite())
+	  if(chemin_libre(tab_player[i]))
 	  {
 		if(tab_player[i].upCompteur()) creer_balle(tab_player[i]);
 	  }
@@ -179,7 +275,6 @@ void creer_balle(Player& p)
   double angle= calcul_angle(p.getCoord(),p.getCible_coord());
   double abs=p.getAbcisse();
   double ord=p.getOrdonnee();
-  cout<<"l'angle est "<<angle<<endl;
   Ball b(abs,ord, angle, nbCell);
   double distance=p.getPos_joueur().rayon+COEF_MARGE_JEU*(SIDE/nbCell)+b.getPos_ball().rayon;
   abs=distance*cos(b.getAngle_b());
@@ -200,6 +295,11 @@ void deplacement_balles()
     }
 }
 
+
+
+
+
+
 //fonction main fournit le pointeur vers le fichier (argv[1])
 void lecture(char * nom_fichier)
 {
@@ -215,6 +315,7 @@ void lecture(char * nom_fichier)
 			decodage_ligne(line,true,etat);
         }
 		check_error(true);
+		init_tab();
         cout << FILE_READING_SUCCESS << endl;
 	}
 }
@@ -312,7 +413,6 @@ void decodage_ligne(string line,bool mode,int& etat)
 			cout<<"la fin a été atteinte"<<endl;
 			break;
 	}
-	nbSpots=(nbCell*nbCell)-tab_obst.size();
 }
 
 bool falseposition(double x, double y)
@@ -533,6 +633,7 @@ bool verif(string nom_fichier)
 			decodage_ligne(line,false,etat);
         }
 		check_error(false);
+		init_tab();
 	}
 	//nbCell vaut 0 si erreur lecture car effacage struct de données
 	if(nbCell==0) return false;
@@ -544,17 +645,25 @@ void erasing_data(int& etat)
 {
 	etat=FIN;
 	nbCell=0;
+	nbSpots=0;
 	tab_ball.clear();
 	tab_obst.clear();
 	tab_player.clear();
+	tab_spots.clear();
+	grille_terrain.clear();
+	tab_floyd.clear();
 }
 
 void erasing_data()
 {
 	nbCell=0;
+	nbSpots=0;
 	tab_ball.clear();
 	tab_obst.clear();
 	tab_player.clear();
+	tab_spots.clear();
+	grille_terrain.clear();
+	tab_floyd.clear();
 
 }
 
@@ -599,55 +708,128 @@ Ball get_ball_i(int i)
 	return tab_ball[i];   //retourne la i+1eme balle
 }
 
-
-//ajout yucef
-
-
-bool inters_obst_rect(Player proie, Player predateur, Obstacle obstacle)
+bool inters_obst_rect(Rond proie, Player predateur, Coord obstacle)
 {
-	Coord c1 = indice_en_coord(obstacle.getcarre(),nbCell);
-	Coord p1, p2, p3, p4;   // points des 4 coins de l'obstacle
+	Coord c1 = obstacle;
+	Coord p1, p2, p3, p4,proie_coord;   // points des 4 coins de l'obstacle
 	p1.x = c1.x + MOIT_HAUT;		// p1: haut droit, p2: bas droit, p3: bas gauche, p4: haut gauche
 	p1.y = c1.y + MOIT_HAUT;
 	p2.x = c1.x + MOIT_HAUT;
 	p2.y = c1.y - MOIT_HAUT;
-	p3.x = c1.x - MOIT_HAUT;
+	p3.x = c1.x - MOIT_HAUT;//p3 en haut a gauche au lieu de bas gaucghe
 	p3.y = c1.y + MOIT_HAUT;
 	p4.x = c1.x - MOIT_HAUT;
 	p4.y = c1.y - MOIT_HAUT;
-	if (proie.getPos_joueur().y==predateur.getPos_joueur().y)
-		if (sup_rect_obst(c1, predateur.getPos_joueur(),
-												proie.getPos_joueur(), nbCell))
-			return true;
-	if (proie.getPos_joueur().y!=predateur.getPos_joueur().y)
+	proie_coord.x=proie.x;
+	proie_coord.y=proie.y;
+	if (fabs(proie.x-predateur.getPos_joueur().x)<1)//PRECISION)
 	{
+	//	cout<<sup_rect_obst(c1, predateur.getPos_joueur(),
+	//											proie, nbCell)<<endl;    //test pente verticale
+		cout<<"abscisses egales"<<endl;
+		if (sup_rect_obst(c1, predateur.getPos_joueur(),
+												proie, nbCell)) // a tester
+		{
+			return true;
+		}
+		}
+
+	else
+	{
+		cout<<"la proie du joueur est sur "<<proie_coord.x<<" "<<proie_coord.y<<endl;
 		double pente = pente_chemin(predateur.getCoord(),
-													   proie.getCoord());
-		double b1 = calcul_b(predateur.getCoord(),pente) + predateur.getPos_joueur().rayon;
+													   proie_coord);
+		double b1 = calcul_b(predateur.getCoord(),pente) + predateur.getPos_joueur().rayon;  //b1 au dessus 
 		double b2 = calcul_b(predateur.getCoord(),pente) - predateur.getPos_joueur().rayon;
-		if ((fonct_maths(p1.x,pente,b1)<=p1.y+ML) && (fonct_maths(p1.x,pente,b1)>=p2.y+ML))
+		cout<<"pente: "<<pente<<endl;
+		cout<<"b1 : "<<b1<<"et b2 : "<<b2<<endl;		
+
+		if(inter_cote_carre(p1.x,p2.y,p1.y,pente,b1,b2))
+		{
+			cout<<"intersection cote b"<<endl;
 			return true;
-		if ((fonct_maths(p3.x,pente,b1)<=p4.y+ML) && (fonct_maths(p3.x,pente,b1)>=p3.y+ML))
+		}
+
+		if(inter_cote_carre(p3.x,p4.y,p3.y,pente,b1,b2))
+		{
+			cout<<"intersection cote d"<<endl;
 			return true;
-		if ((fonct_maths(p1.x,pente,b2)<=p1.y+ML) && (fonct_maths(p1.x,pente,b2)>=p2.y+ML))
+		}
+
+
+		if(inter_haut_carre(p2.y,p3.x,p2.x,pente,b1,b2))
+		{
+			cout<<"intersection cote a"<<endl;
 			return true;
-		if ((fonct_maths(p3.x,pente,b2)<=p4.y+ML) && (fonct_maths(p3.x,pente,b2)>=p3.y+ML))
+		}
+
+		if(inter_haut_carre(p1.y,p3.x,p1.x,pente,b1,b2))
+		{
+			cout<<"intersection cote c"<<endl;
 			return true;
+		}
+
+	/*	if((fonct_maths(p1.x,pente,b1)>=p1.y)&&(fonct_maths(p4.x,pente,b1)<=p4.y))
+			return true;
+		if((fonct_maths(p1.x,pente,b2)>=p1.y)&&(fonct_maths(p4.x,pente,b2)<=p4.y))
+			return true;
+		if ((fonct_maths(p3.x,pente,b1)>=p3.y)&&(fonct_maths(p2.x,pente,b1)<=p2.y))
+			return true;
+		if ((fonct_maths(p3.x,pente,b2)>=p3.y)&&(fonct_maths(p2.x,pente,b2)<=p2.y))
+			return true;
+*/
+/*		cout<<(fonct_maths(p1.x,pente,b1)>=p1.y)<<" "<<(fonct_maths(p4.x,pente,b1)<=p4.y)<<endl;
+		cout<<(fonct_maths(p1.x,pente,b2)>=p1.y)<<" "<<(fonct_maths(p4.x,pente,b2)<=p4.y)<<endl;
+		cout<<(fonct_maths(p3.x,pente,b1)>=p3.y)<<" "<<(fonct_maths(p2.x,pente,b1)<=p2.y)<<endl;
+		cout<<(fonct_maths(p3.x,pente,b2)>=p3.y)<<" "<<(fonct_maths(p2.x,pente,b2)<=p2.y)<<endl;
+		cout<<fonct_maths(p4.x,pente,b1)<<" "<<p4.y<<endl;
+		cout<<fonct_maths(p1.x,pente,b1)<<" "<<p1.y<<endl;
+		cout<<endl;
+		
+		cout<<"2*rayon :"<<predateur.getPos_joueur().rayon*2<<endl;
+		cout<<(fonct_maths(p1.x,pente,b1)<=p1.y+MJ)<<" "<<(fonct_maths(p1.x,pente,b1)>=p2.y+MJ)<<endl;
+		cout<<(fonct_maths(p3.x,pente,b1)<=p3.y+MJ)<<" "<<(fonct_maths(p3.x,pente,b1)>=p4.y+MJ)<<endl;
+		cout<<(fonct_maths(p1.x,pente,b2)<=p1.y+MJ)<<" "<<(fonct_maths(p1.x,pente,b2)>=p2.y+MJ)<<endl;
+		cout<<(fonct_maths(p3.x,pente,b2)<=p3.y+MJ)<<" "<<(fonct_maths(p3.x,pente,b2)>=p4.y+MJ)<<endl;
+		if ((fonct_maths(p1.x,pente,b1)<=p1.y+MJ) && (fonct_maths(p1.x,pente,b1)>=p2.y+MJ))   //f1
+			return true;
+		if ((fonct_maths(p3.x,pente,b1)<=p3.y+MJ) && (fonct_maths(p3.x,pente,b1)>=p4.y+MJ))	  //f1	
+			return true;	
+		if ((fonct_maths(p1.x,pente,b2)<=p1.y+MJ) && (fonct_maths(p1.x,pente,b2)>=p2.y+MJ))	  //f2
+			return true;
+		if ((fonct_maths(p3.x,pente,b2)<=p3.y+MJ) && (fonct_maths(p3.x,pente,b2)>=p4.y+MJ))   //f2
+			return true;*/
 	}
+	cout<<"pas de collisions trouvee"<<endl;
 	return false;
 }
 
-bool chemin_libre(Player predateur, Player proie)
+bool chemin_libre(Player predateur)
 {
-	for (size_t i(0); i<tab_obst.size(); ++i)
+	cout<<predateur.getCible().x<<" "<<predateur.getCible().y<<endl;
+	for (size_t i(0); i<tab_obst.size(); ++i) // a mettre en decrementation
 	{
+	//	cout << "pos du joueur " << predateur.getPos_joueur().x<< " " << predateur.getPos_joueur().y << endl 
+	//		 << "pos de la proie "<< predateur.getCible().x << " " << predateur.getCible().y << endl
+//		cout	 << "pos de l'obstacle " << indice_en_coord(tab_obst[i].getcarre(),nbCell).x
+//			 						<< indice_en_coord(tab_obst[i].getcarre(),nbCell).y << endl;
+	//		 << "numero de l'obstacle "<< i << endl;
+	//	cout<<endl<<endl<<"joueur avant test"<<endl;
 		if(carre_dans_zone(predateur.getPos_joueur(),
-						   proie.getPos_joueur(), 														//on regarde si l'obstacle est dans la zone concernée pour réduire la complexité de calcul
+						   predateur.getCible(), 														//on regarde si l'obstacle est dans la zone concernée pour réduire la complexité de calcul
 						   indice_en_coord(tab_obst[i].getcarre(),nbCell),
 						   nbCell))
-			if(inters_obst_rect(predateur, proie, tab_obst[i]))
-				return false;																				//si obstacle, le chemin n'est pas libre ainsi false, sinon true
+	//		cout<<"test de la zone passee"<<endl;
+		{
+			cout<<"test avec obstacle "<<i+1<<endl;
+			if(inters_obst_rect(predateur.getCible(), predateur, indice_en_coord(tab_obst[i].getcarre(),nbCell)))
+			{ 
+				cout<<"chemin non libre"<<endl;
+				return false;			
+			}
+		}														//si obstacle, le chemin n'est pas libre ainsi false, sinon true
 	}
+	cout<<"chemin libre"<<endl;
 	return true;
 }
 
@@ -660,13 +842,15 @@ void remplis_grille()
 	}
 	for(size_t i(0); i<tab_obst.size(); ++i)
 	{
-		grille_terrain[tab_obst[i].getcarre().ligne][tab_obst[i].getcarre().ligne] = 1;
+		grille_terrain[tab_obst[i].getcarre().ligne][tab_obst[i].getcarre().colonne] = 1;
+		cout<<tab_obst[i].getcarre().ligne<<endl;
+		cout<<tab_obst[i].getcarre().colonne<<endl;
+		cout<<endl;
 	}
 }
 
 void tableau_spots()
 {
-	//vector<Spots> tab_spots(nbSpots)
 	int compteur(0);
 	for (int i(0); i<nbCell ; ++i)
 	{
@@ -696,68 +880,92 @@ void rempl_voisins()
 	for (size_t k(0); k<tab_spots.size() ; ++k)
 	{
 		debut_i = 0;
-		fin_i=0;
-		debut_j = 2;
+		fin_i=2;
+		debut_j = 0;
 		fin_j=2;
-		tab_spots[k].ligne=ligne;
-		tab_spots[k].colonne=colonne;
+		ligne=tab_spots[k].ligne;
+		colonne=tab_spots[k].colonne;
 		if(ligne==0) debut_i = 1;
 		if(ligne==nbCell-1) fin_i=1;
 		if(colonne==0) debut_j = 1;
-		if(colonne==nbCell-1) fin_j=1;
+		if(colonne==nbCell-1) fin_j=1;   // cas speciaux pour les bords
+	//	cout<<"numero "<<tab_spots[k].numero<<endl;
 
-		for (int i(debut_i); i<fin_i ; ++i)
+		for (int i(debut_i); i<=fin_i ; ++i)
 		{
-			for(int j(debut_j); j<fin_i; ++j)
+			for(int j(debut_j); j<=fin_j; ++j)
 			{
-				if(grille_terrain[ligne-1+i][colonne-1+j]==0)
+	//			cout<<"ligne pointee: "<< ligne-1+i <<" et col pointee: "<< colonne-1+j <<endl;
+				if(grille_terrain[ligne-1+i][colonne-1+j]==0)   //si pas d'obstacles
 				{
+					int spot_pointe = numero_spot(ligne-1+i, colonne-1+j, tab_spots);
+	//				cout<<"spot libre detecte"<<endl;
 					if((i==1)||(j==1))
-						tab_floyd[tab_spots[k].numero][nbCell*(ligne+i)+colonne+1]=1;
-				}
-				else
-				{
-					if((i==0)&&(j==0)) //haut gauche
 					{
-						tab_floyd[tab_spots[k].numero][nbCell*(ligne+i)+colonne+1]=2;
-						if((grille_terrain[ligne][colonne-1]==1)&&(grille_terrain[ligne-1][colonne]==1))
-							tab_floyd[tab_spots[k].numero][nbCell*(ligne+i)+colonne+1]=nbCell*nbCell;
-						if((grille_terrain[ligne][colonne-1]==1)||(grille_terrain[ligne-1][colonne]==1))
-							tab_floyd[tab_spots[k].numero][nbCell*(ligne+i)+colonne+1]=1.41;
+						tab_floyd[tab_spots[k].numero-1][spot_pointe-1]=1;
+	//					cout<<"i=1 ou j=1"<<endl;
 					}
-					if((i==0)&&(j==2))	//haut droite
+					else
 					{
-						tab_floyd[tab_spots[k].numero][nbCell*(ligne+i)+colonne+1]=2;
-						if((grille_terrain[ligne+1][colonne]==1)&&(grille_terrain[ligne][colonne+1]==1))
-							tab_floyd[tab_spots[k].numero][nbCell*(ligne+i)+colonne+1]=nbCell*nbCell;
-						if((grille_terrain[ligne+1][colonne]==1)||(grille_terrain[ligne][colonne+1]==1))
-							tab_floyd[tab_spots[k].numero][nbCell*(ligne+i)+colonne+1]=1.41;
-					}
-					if((i==2)&&(j==2))	//bas droite
-					{
-						tab_floyd[tab_spots[k].numero][nbCell*(ligne+i)+colonne+1]=2;
-						if((grille_terrain[ligne][colonne+1]==1)&&(grille_terrain[ligne-1][colonne]==1))
-							tab_floyd[tab_spots[k].numero][nbCell*(ligne+i)+colonne+1]=nbCell*nbCell;
-						if((grille_terrain[ligne][colonne+1]==1)||(grille_terrain[ligne-1][colonne]==1))
-							tab_floyd[tab_spots[k].numero][nbCell*(ligne+i)+colonne+1]=1.41;
-					}
-					if((i==2)&&(j==0))	//bas gauche
-					{
-						tab_floyd[tab_spots[k].numero][nbCell*(ligne+i)+colonne+1]=2;
-						if((grille_terrain[ligne][colonne-1]==1)&&(grille_terrain[ligne-1][colonne]==1))
-							tab_floyd[tab_spots[k].numero][nbCell*(ligne+i)+colonne+1]=nbCell*nbCell;
-						if((grille_terrain[ligne][colonne-1]==1)||(grille_terrain[ligne-1][colonne]==1))
-							tab_floyd[tab_spots[k].numero][nbCell*(ligne+i)+colonne+1]=1.41;
+	//					cout<<"dans le else"<<endl;
+						if((i==0)&&(j==0)) //haut gauche
+						{
+							tab_floyd[tab_spots[k].numero-1][spot_pointe-1]=1.41;
+							if((grille_terrain[ligne][colonne-1]==1)||(grille_terrain[ligne-1][colonne]==1))
+								tab_floyd[tab_spots[k].numero-1][spot_pointe-1]=2;
+							if((grille_terrain[ligne][colonne-1]==1)&&(grille_terrain[ligne-1][colonne]==1))
+								tab_floyd[tab_spots[k].numero-1][spot_pointe-1]=nbCell*nbCell;
+						}
+	//					cout<<"je suis al 1"<<endl;
+						if((i==0)&&(j==2))	//haut droite
+						{
+							tab_floyd[tab_spots[k].numero-1][spot_pointe-1]=1.41;
+							if((grille_terrain[ligne-1][colonne]==1)||(grille_terrain[ligne][colonne+1]==1))
+								tab_floyd[tab_spots[k].numero-1][spot_pointe-1]=2;							
+							if((grille_terrain[ligne-1][colonne]==1)&&(grille_terrain[ligne][colonne+1]==1))
+								tab_floyd[tab_spots[k].numero-1][spot_pointe-1]=nbCell*nbCell;
+
+						}
+	//					cout<<"je suis al 2"<<endl;
+						if((i==2)&&(j==2))	//bas droite
+						{
+							tab_floyd[tab_spots[k].numero-1][spot_pointe-1]=1.41;
+							if((grille_terrain[ligne][colonne+1]==1)||(grille_terrain[ligne+1][colonne]==1))
+								tab_floyd[tab_spots[k].numero-1][spot_pointe-1]=2;
+							if((grille_terrain[ligne][colonne+1]==1)&&(grille_terrain[ligne+1][colonne]==1))
+								tab_floyd[tab_spots[k].numero-1][spot_pointe-1]=nbCell*nbCell;
+						}
+	//					cout<<"je suis al 3"<<endl;
+						if((i==2)&&(j==0))	//bas gauche
+						{
+	//						cout<<"je suis dans le coin bas gauche"<<endl;
+							tab_floyd[tab_spots[k].numero-1][spot_pointe-1]=1.41;
+	//						cout<<"jai passe la premiere action"<<endl;
+							if((grille_terrain[ligne][colonne-1]==1)||(grille_terrain[ligne+1][colonne]==1))
+								tab_floyd[tab_spots[k].numero-1][spot_pointe-1]=2;
+							if((grille_terrain[ligne][colonne-1]==1)&&(grille_terrain[ligne+1][colonne]==1))
+								tab_floyd[tab_spots[k].numero-1][spot_pointe-1]=nbCell*nbCell;
+						}
+	//					cout<<"je suis al 4"<<endl;
 					}
 				}
 			}
 		}
+		cout << endl<<endl;
 	}
 }
 
 void alg_floyd()
 {
-	
+	cout<<"tab_floyd: "<<endl;
+	for (int i = 0; i < nbSpots; ++i)
+	{
+		for (int j = 0; j < nbSpots; ++j)
+		{
+			cout<<tab_floyd[i][j]<<"  |  ";
+		}
+	cout<<endl;
+	}
 	//////tab_floyd initialisé aux valeurs nbCel
 	for(int k(0); k<nbSpots ; ++k)
 	{
@@ -780,25 +988,28 @@ Coord direction_pred(Player predateur)
 {
 	//a deja en attribut sa proie
 	//choix du prochain spot, qui sera transformé en coord:
-	//
 	Spot spot_pred;
 	Spot spot_proie;
 	int debut_i,debut_j,fin_i,fin_j;
-	for(int k(0);k<nbSpots;++k)
+	for(int k(0);k<nbSpots;++k)  //on cherche le spot du predateur
 	{
 		Carre carre;
 		carre.ligne = tab_spots[k].ligne;
-		carre.ligne = tab_spots[k].colonne;
+		carre.colonne = tab_spots[k].colonne;
 		Coord centre_carre = indice_en_coord(carre,nbCell);
-		if((fabs(centre_carre.x-predateur.getPos_joueur().x)<=MOIT_HAUT)&&
+		if((fabs(centre_carre.x-predateur.getPos_joueur().x)<=MOIT_HAUT)&&  //test
 		   (fabs(centre_carre.y-predateur.getPos_joueur().y)<=MOIT_HAUT))
-			spot_pred = tab_spots[k];
+			{
+				spot_pred = tab_spots[k];
+		//		cout<<"un nv spot pred affectè"<<endl;
+			}
 	}
-	for(int m(0);m<nbSpots;++m)
+//	cout<<"numero du spot du pred: "<< spot_pred.numero <<endl;
+	for(int m(0);m<nbSpots;++m)  //on cherche le spot de la proie
 	{
 		Carre carre;
 		carre.ligne = tab_spots[m].ligne;
-		carre.ligne = tab_spots[m].colonne;
+		carre.colonne = tab_spots[m].colonne;
 		Coord centre_carre = indice_en_coord(carre,nbCell);
 		Rond proie = predateur.getCible();
 		if((fabs(centre_carre.x-proie.x)<=MOIT_HAUT)&&
@@ -808,39 +1019,112 @@ Coord direction_pred(Player predateur)
 	int ligne = spot_pred.ligne;
 	int colonne = spot_pred.colonne;
 	debut_i = 0;
-	fin_i=0;
-	debut_j = 2;
+	fin_i=2;
+	debut_j = 0;
 	fin_j=2;
 	if(ligne==0) debut_i = 1;
 	if(ligne==nbCell-1) fin_i=1;
 	if(colonne==0) debut_j = 1;
 	if(colonne==nbCell-1) fin_j=1;
-	double dist_min=tab_floyd[spot_pred.numero][spot_proie.numero];
+	double dist_min=tab_floyd[spot_pred.numero-1][spot_proie.numero-1];
 	Carre empl_choisi;
-	for (int i(debut_i); i<fin_i ; ++i)
+	for (int i(debut_i); i<=fin_i ; ++i)
 	{
-		for(int j(debut_j); j<fin_i; ++j)
+	//	cout <<"pointe sur la ligne   "<<ligne-1+i<<endl;
+		for(int j(debut_j); j<=fin_j; ++j)
 		{
+	//		cout <<"pointe sur la colonne "<<colonne-1+j<<endl;
 			if(grille_terrain[ligne-1+i][colonne-1+j]==0)
 			{
-				if(tab_floyd[nbCell*(ligne+i)+colonne+1][spot_proie.numero]
-					<dist_min)
+				if(tab_floyd[numero_spot(ligne-1+i,colonne-1+j,tab_spots)-1][spot_proie.numero-1]
+					<=dist_min)
 				{
-					dist_min = tab_floyd[nbCell*(ligne+i)+colonne+1][spot_proie.numero];
-					empl_choisi.ligne=ligne-1+i;
-					empl_choisi.colonne=colonne-1+j;
+						if(tab_floyd[spot_pred.numero-1][numero_spot(ligne-1+i,colonne-1+j,tab_spots)-1]==1.41
+							||(i==1)||(j==1))	//on veut que le joueur passe que par les diagonales tot libres ou verticalem ou horiz								
+						{	
+							if(tab_floyd[numero_spot(ligne-1+i,colonne-1+j,tab_spots)-1][spot_proie.numero-1]
+							   ==dist_min)
+							{
+								if(j==2)
+								{
+									dist_min = tab_floyd[numero_spot(ligne-1+i,colonne-1+j,tab_spots)-1][spot_proie.numero-1];
+									empl_choisi.ligne=ligne-1+i;
+									empl_choisi.colonne=colonne-1+j;		//a encapsuler
+			//						cout<<"numero du spot choisi "<<numero_spot(ligne-1+i,colonne-1+j,tab_spots)<<endl; 
+								}
+								else if (i==0)
+								{
+									dist_min = tab_floyd[numero_spot(ligne-1+i,colonne-1+j,tab_spots)-1][spot_proie.numero-1];
+									empl_choisi.ligne=ligne-1+i;
+									empl_choisi.colonne=colonne-1+j;
+			//						cout<<"numero du spot choisi "<<numero_spot(ligne-1+i,colonne-1+j,tab_spots)<<endl;
+								}
+								else if (i==2)
+								{
+									dist_min = tab_floyd[numero_spot(ligne-1+i,colonne-1+j,tab_spots)-1][spot_proie.numero-1];
+									empl_choisi.ligne=ligne-1+i;
+									empl_choisi.colonne=colonne-1+j;
+			//						cout<<"numero du spot choisi "<<numero_spot(ligne-1+i,colonne-1+j,tab_spots)<<endl;
+								}
+							}
+							else	
+							dist_min = tab_floyd[numero_spot(ligne-1+i,colonne-1+j,tab_spots)-1][spot_proie.numero-1];
+							empl_choisi.ligne=ligne-1+i;
+							empl_choisi.colonne=colonne-1+j;
+			//				cout<<"numero du spot choisi "<<numero_spot(ligne-1+i,colonne-1+j,tab_spots)<<endl;
+						}
+					//}	
 				}
 			}
 		}
 	}
-	return indice_en_coord(empl_choisi,nbCell);
+//	cout<<"distance minimum"<<dist_min<<endl;
+//	cout<<"coordonnees de l'emplacement choisi"<<endl;
+//	cout<<indice_en_coord(empl_choisi,nbCell).x<<"  "<<indice_en_coord(empl_choisi,nbCell).y<<endl<<endl;
+	Coord direction;
+	direction.x=indice_en_coord(empl_choisi,nbCell).x-predateur.getPos_joueur().x;
+	direction.y=indice_en_coord(empl_choisi,nbCell).y-predateur.getPos_joueur().y;
+	return direction;
 }
 
 void init_tab()
 {
+	cout<<"passe dans init_tab"<<endl;
 	nbSpots=(nbCell*nbCell)-tab_obst.size();
-	void tableau_spots();
 	remplis_grille();
+	tableau_spots();
 	rempl_voisins();
 	alg_floyd();
+	affich_test();
+
+	cout<<"fin init tab"<<endl;
 }
+
+void affich_test()
+{
+	cout<<"nbSpots= "<<nbSpots<<endl;
+	cout<<"grille_terrain: "<<endl;
+	for (int i = 0; i < nbCell; ++i)
+	{
+		for (int j = 0; j < nbCell; ++j)
+		{
+			cout<<grille_terrain[i][j];
+		}
+	cout<<endl;
+	}
+	cout<<"tab_spots: "<<endl;
+	for (int i = 0; i < nbSpots; ++i)
+	{
+		cout<<tab_spots[i].numero<<"  |  ";
+	}
+	cout<<endl;
+	cout<<"tab_floyd: "<<endl;
+	for (int i = 0; i < nbSpots; ++i)
+	{
+		for (int j = 0; j < nbSpots; ++j)
+		{
+			cout<<tab_floyd[i][j]<<"  |  ";
+		}
+	cout<<endl;
+	}
+} 

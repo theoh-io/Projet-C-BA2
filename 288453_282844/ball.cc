@@ -50,3 +50,9 @@ void Ball::setPos_ball(double x1, double y1)
 	pos_ball.x = x1;
 	pos_ball.y = y1;
 }
+/*
+void Ball::destroy()
+{
+	mort=true;
+}
+*/

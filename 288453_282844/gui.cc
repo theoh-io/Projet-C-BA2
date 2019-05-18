@@ -164,7 +164,7 @@ MyWindow::MyWindow() :
 	m_Box_Bottom(Gtk::ORIENTATION_HORIZONTAL), m_Button_Exit("Exit"),
 	m_Button_Open("Open"),m_Button_Save("Save"),m_Button_Start("Start"),
   m_Button_Step("Step"),m_Label_Info("No game to run"),
-	timer_added(false),disconnect(false),timeout_value(500)//DELTA_T) // 500 ms = 0.5 seconds
+	timer_added(false),disconnect(false),timeout_value(100)//DELTA_T) // 500 ms = 0.5 seconds
 {
 	set_title("Dodgeball");
 
