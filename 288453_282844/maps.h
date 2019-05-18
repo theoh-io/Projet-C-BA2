@@ -17,10 +17,12 @@ class Obstacle
 	    
 		// manipulateurs
 		void setcarre(int, int, double);
+		//void destroy();
 			
 	private:
 		//declaration des attributs
 		Carre pos_obs;
+		//bool mort;
 
 
 };

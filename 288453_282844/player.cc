@@ -12,6 +12,7 @@ Player::Player()
 	cible.y=0;
 	futur_pos.x=0;
 	futur_pos.y=0;
+
 }
 
 //constructeur initialisant la position en x et y
@@ -23,6 +24,7 @@ Player::Player(double abs, double ord)
 	cible.y=0;
 	futur_pos.x=0;
 	futur_pos.y=0;
+
 }
 
 Player::Player(double abs, double ord, int total1, int total2,int nbcell)
@@ -103,6 +105,8 @@ Rond Player::getfutur_pos() const
 }
 
 // manipulateurs
+
+
 void Player::set_cible(Rond autre)
 {
 	cible.x= autre.x;
@@ -152,4 +156,10 @@ bool Player::upCompteur()
 void Player::resetCompteur()
 {
 	compteur=0;
+}
+
+void Player::shot()
+{
+	std::cout<<"player shot"<<std::endl;
+	if(nb_touches>0) nb_touches=nb_touches-1;
 }

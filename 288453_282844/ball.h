@@ -19,14 +19,15 @@ class Ball
 		void setAngle_b(double);
 		void setPos_ball(double,double);
 		void deplacer_ball(double abcisse,double ordonnee);
+		//void destroy();
 
 	private:
 		//declaration des attributs
 		double angle_b;
 		Rond pos_ball;
+		//bool mort;
 };
 
 
 #endif
 
-//yeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeees

@@ -24,6 +24,7 @@ class Player
 	    int getNb_touches() const;
 		Rond getCible() const;
 		Rond getfutur_pos() const;
+		
 
 		// manipulateurs
 		void setAbcisse(double);
@@ -36,6 +37,8 @@ class Player
 		void valider_deplacement();
 		bool upCompteur();
 		void resetCompteur();
+		void shot();
+		//bool vivant();
 
 	private:
 		//declaration des attributs
