@@ -5,7 +5,9 @@
 #include <vector>
 
 #define PRECISION				0.001 //tests d'egalite sur double
+//a suppr
 #define MJ					 	COEF_MARGE_JEU*(SIDE/nbCell)
+#define ML					 	(COEF_MARGE_JEU/2)*(SIDE/nbCell)
 
 
 
@@ -39,8 +41,6 @@ struct Spot
 
 Coord indice_en_coord(Carre c, int nbCell);
 
-Carre spot_en_carre(Spot spot, int nbCell);
-
 bool supp_cercles(Rond co1, Rond co2, int nbcell);
 
 bool supp_cercles_en_jeu(Rond co1, Rond co2, int nbCell);
@@ -61,17 +61,15 @@ double pente_chemin(Coord j1, Coord j2);
 
 double calcul_b(Coord predateur, double pente);
 
-double calcul_b_angle(Rond predateur, Rond proie, double pente);
-
 double fct_math(double angle, double x, double b);
 
 double fonct_maths_inv(double y, double pente, double b);
 
 bool inter_cote_carre(double abscisse, double niveau_bas, double niveau_haut, double pente, 
-				      double b1, double b2, int nbCell);
+				      double b1, double b2);
 
 bool inter_haut_carre(double ordonnee, double niveau_gauche, double niveau_droit, double pente, 
-				      double b1, double b2, int nbCell);
+				      double b1, double b2);
 
 bool carre_dans_zone(Rond p1, Rond p2, Coord carre, int nbCell);
 

@@ -46,8 +46,22 @@ Player::Player(double abs, double ord, int total1, int total2,int nbcell)
 Player::~Player()
 {
 }
-//a definir impérativement
 
+Player::Player(const Player& autre)
+{
+	pos_joueur.x=autre.getPos_joueur().x;
+	pos_joueur.y=autre.getPos_joueur().y;
+	nb_touches= autre.getNb_touches();
+	compteur= autre.getCompteur();
+	pos_joueur.rayon=autre.getPos_joueur().rayon;
+	futur_pos.rayon=autre.getfutur_pos().rayon;
+	cible.x=autre.getCible().x;
+	cible.y=autre.getCible().y;
+	futur_pos.x=autre.getfutur_pos().x;
+	futur_pos.y=autre.getfutur_pos().y;
+	
+}
+;
 
 
 
@@ -98,6 +112,14 @@ Coord Player::getCible_coord() const
   return c;
 }
 
+Coord Player::getfutur_pos_coord() const
+{
+  Coord futur_pos_coord;
+  futur_pos_coord.x=futur_pos.x;
+  futur_pos_coord.y=futur_pos.y;
+  return futur_pos_coord;
+}
+
 
 Rond Player::getfutur_pos() const
 {
@@ -130,6 +152,7 @@ void Player::setPos_joueur(double x1, double y1)
 	pos_joueur.y = y1;
 }
 
+
 void  Player::bouger_joueur(double x1,double y1)
 {
   futur_pos.x=pos_joueur.x + x1;
@@ -141,6 +164,12 @@ void Player::valider_deplacement()
 {
   pos_joueur.x=futur_pos.x;
   pos_joueur.y=futur_pos.y;
+}
+
+void Player::annuler_deplacement()
+{
+  futur_pos.x=pos_joueur.x;
+  futur_pos.y=pos_joueur.y;
 }
 
 bool Player::upCompteur()
@@ -160,6 +189,5 @@ void Player::resetCompteur()
 
 void Player::shot()
 {
-	std::cout<<"player shot"<<std::endl;
 	if(nb_touches>0) nb_touches=nb_touches-1;
 }

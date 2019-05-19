@@ -13,7 +13,6 @@ bool verif(std::string nom_fichier);
 void erasing_data(int& etat);
 void erasing_data();
 bool game_over();
-bool joueur_prisonnier();
 
 int get_nbCell();
 std::vector<Obstacle> get_obst();
