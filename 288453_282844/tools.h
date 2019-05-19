@@ -6,6 +6,7 @@
 
 #define PRECISION				0.001 //tests d'egalite sur double
 #define MJ					 	COEF_MARGE_JEU*(SIDE/nbCell)
+#define ML					 	(COEF_MARGE_JEU/2)*(SIDE/nbCell)
 
 
 
@@ -39,6 +40,8 @@ struct Spot
 
 Coord indice_en_coord(Carre c, int nbCell);
 
+Carre spot_en_carre(Spot spot, int nbCell);
+
 bool supp_cercles(Rond co1, Rond co2, int nbcell);
 
 bool supp_cercles_en_jeu(Rond co1, Rond co2, int nbCell);
@@ -58,6 +61,8 @@ double calcul_angle(Coord pred, Coord cible);
 double pente_chemin(Coord j1, Coord j2);
 
 double calcul_b(Coord predateur, double pente);
+
+double calcul_b_angle(Rond predateur, Rond proie, double pente);
 
 double fct_math(double angle, double x, double b);
 

@@ -3,9 +3,11 @@
 #include "gui.h"
 #include <cairomm/context.h>
 #include <vector>
+#include <string>
 
 using namespace std;
 
+#define HAUTEUR_FENETRE 							SIDE + 100
 #define TRAIT_NUL				0.0
 #define RAD_NUL					0.0
 #define RAPP_TRAIT				0.4
@@ -15,12 +17,15 @@ using namespace std;
 #define HAUT_BOUT				10
 #define ORIGINE					0
 
+
 enum ETAT_JOUEUR {CRITIQUE =1, RISQUE, TOUCHE, SAIN};
 
 void dessin_fenetre(const Cairo::RefPtr<Cairo::Context>& cr);
 void dessin_player(const Cairo::RefPtr<Cairo::Context>& cr);
 void dessin_ball(const Cairo::RefPtr<Cairo::Context>& cr);
 void dessin_obstacle(const Cairo::RefPtr<Cairo::Context>& cr);
+
+
 
 MyArea::MyArea()
 {
@@ -230,9 +235,12 @@ void MyWindow::on_button_open_clicked()
     	{
       		std::string filename = dialog.get_filename();
       		erasing_data();
-      		if(verif(filename)==false)set_Label("No game to run");
-      		else set_Label("Game ready to run");
-      		if(game_over()) set_Label("Game's over!");
+      		if(!verif(filename))set_Label("No game to run");
+      		else 
+      		{
+			  set_Label("Game ready to run");
+      		  if(game_over()) set_Label("Game's over!");
+		    }
       		break;
     	}
     	case(Gtk::RESPONSE_CANCEL):
@@ -273,13 +281,6 @@ void MyWindow::on_button_save_clicked()
 
 void MyWindow::on_button_start_clicked()
 {
-	/*
-	std::cout<<"start clicked"<<std::endl;
-	switch_etat();
-	if(get_etat()==true)  std::cout<<"simulation is on"<<std::endl;
-	if(get_etat()==false) std::cout<<"simulation stopped"<<std::endl;
-	*/
-
 	//bouton en mode start
 	if(not timer_added)
 	{
@@ -292,8 +293,7 @@ void MyWindow::on_button_start_clicked()
 	//bouton mode stop
 	else
 	{
-		std::cout << "manually disconnecting the timer " << std::endl;
-	  disconnect  = true;
+	    disconnect  = true;
 		timer_added = false;
 		start_stop();
 	}
@@ -308,7 +308,14 @@ bool MyWindow::on_timeout()
 	  return false; // End of Timer
   }
   //action a faire a chaque tic = mise a jour
-  mise_a_jour();
+  if(game_over())
+  {
+	set_Label("Game's over!");
+	disconnect =true;
+	timer_added = false;
+	start_stop();
+  }
+  else mise_a_jour();
   m_Area.refresh();
   return true; // keep the Timer working
 }
@@ -319,22 +326,41 @@ void MyWindow::start_stop()
 	if(timer_added) m_Button_Start.set_label("Stop");
 	else m_Button_Start.set_label("Start");
 }
-/*
-void MyWindow::switch_etat()
-{
-	if(etat_simulation==true) etat_simulation=false;
-	else etat_simulation=true;
-}
 
-bool MyWindow::get_etat()
-{
-	return etat_simulation;
-}
-*/
 
 void MyWindow::on_button_step_clicked()
 {
-	std::cout<<"step clicked"<<std::endl;
+	if(game_over())
+	{
+	  set_Label("Game's over!");
+	  disconnect =true;
+	  timer_added = false;
+	  start_stop();
+	}
+	else mise_a_jour();
 	m_Area.refresh();
-	mise_a_jour();
+}
+
+int execut_seul()
+{
+	auto app = Gtk::Application::create();
+	MyWindow window;
+	window.set_default_size(HAUTEUR_FENETRE,SIDE);
+	window.set_resizable(false);
+	return app->run(window);
+}
+
+void entree_texte(string s)
+{
+	auto app =Gtk::Application::create();
+	MyWindow window;
+	window.set_default_size(HAUTEUR_FENETRE,SIDE);
+	window.set_resizable(false);
+	if(s=="Game Ready to run")
+	{
+		window.set_Label("Game Ready to run");
+		if(game_over()) window.set_Label("Game's over!");
+	}
+	else if(s=="No Game to run") window.set_Label("No Game to run");
+	app->run(window);
 }

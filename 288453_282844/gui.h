@@ -2,6 +2,7 @@
 #define GTKMM_EXAMPLE_MYEVENT_H
 #include <gtkmm.h>
 #include "simulation.h"
+#include <string>
 
 
 class MyArea : public Gtk::DrawingArea
@@ -61,5 +62,8 @@ class MyWindow : public Gtk::Window
 };
 
 //functions to be used in projet
+
+int execut_seul();
+void entree_texte(std::string s);
 
 #endif // GTKMM_EXAMPLE_MYEVENT_H

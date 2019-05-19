@@ -13,6 +13,7 @@ class Player
 		Player();
 		Player(double abs, double ord);
 		Player(double abs, double ord, int total1, int total2, int nbcell);
+		Player(const Player& autre);
 		virtual ~Player();
 		// accesseurs
 		double getAbcisse() const;
@@ -24,6 +25,8 @@ class Player
 	    int getNb_touches() const;
 		Rond getCible() const;
 		Rond getfutur_pos() const;
+		Coord getfutur_pos_coord() const;
+		
 		
 
 		// manipulateurs
@@ -35,6 +38,7 @@ class Player
 		void set_cible(Rond autre);
         void bouger_joueur(double,double);
 		void valider_deplacement();
+		void annuler_deplacement();
 		bool upCompteur();
 		void resetCompteur();
 		void shot();
