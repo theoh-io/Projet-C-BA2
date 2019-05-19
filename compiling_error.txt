@@ -1,5 +1,0 @@
-In file included from C:\Users\theoh\OneDrive\Documents\GitHub\Projet-C-BA2\288453_282844\gui.cc:3:0:
-C:\Users\theoh\OneDrive\Documents\GitHub\Projet-C-BA2\288453_282844\gui.h:3:19: fatal error: gtkmm.h: No such file or directory
- #include <gtkmm.h>
-                   ^
-compilation terminated.
